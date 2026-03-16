@@ -45,10 +45,10 @@ const FoundersNote = () => {
           <div className="mt-8 pt-6 border-t border-border">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-sm bg-muted flex items-center justify-center text-xs font-bold text-muted-foreground">
-                JC
+                MW
               </div>
               <div>
-                <p className="text-xs font-medium text-foreground">Jordan Chen</p>
+                <p className="text-xs font-medium text-foreground">Michael Wray</p>
                 <p className="text-xs text-muted-foreground">CEO & Co-founder</p>
               </div>
             </div>
