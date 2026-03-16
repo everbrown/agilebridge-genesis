@@ -1,9 +1,12 @@
-import { useState, useCallback } from 'react';
-import { Download, Zap, FileSearch, Milestone } from 'lucide-react';
+import { useState, useCallback, useEffect } from 'react';
+import { Download, Zap, FileSearch, Milestone, Lock } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import IngestZone from '@/components/IngestZone';
 import BacklogTable from '@/components/BacklogTable';
 import ProgressBar from '@/components/ProgressBar';
+import PaywallOverlay from '@/components/PaywallOverlay';
+import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
+import { supabase } from '@/integrations/supabase/client';
 import {
   AgileItem,
   ParseResult,
@@ -25,6 +28,49 @@ const Dashboard = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [docType, setDocType] = useState<DocumentType | null>(null);
   const [milestones, setMilestones] = useState<string[]>([]);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [checkingAccess, setCheckingAccess] = useState(false);
+
+  // Check if user has paid access
+  const checkAccess = useCallback(async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setHasAccess(false);
+        return;
+      }
+      setCheckingAccess(true);
+      const { data, error } = await supabase.functions.invoke('check-subscription');
+      if (!error && data?.hasAccess) {
+        setHasAccess(true);
+      } else {
+        setHasAccess(false);
+      }
+    } catch {
+      setHasAccess(false);
+    } finally {
+      setCheckingAccess(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkAccess();
+
+    // Re-check on focus (user returns from checkout)
+    const handleFocus = () => checkAccess();
+    window.addEventListener('focus', handleFocus);
+
+    // Check on URL params (checkout=success)
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('checkout') === 'success') {
+      // Small delay to let Stripe process
+      setTimeout(checkAccess, 2000);
+      // Clean URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [checkAccess]);
 
   const handleFileAccepted = useCallback((f: File) => {
     setFile(f);
@@ -55,7 +101,6 @@ const Dashboard = () => {
       const text = await file.text();
       detectedType = classifyDocument(file.name, text);
       detectedMilestones = extractMilestones(text);
-      // Phase 2: Parsing (20-60%)
       for (let i = 20; i <= 60; i += 5) {
         await new Promise(r => setTimeout(r, 40));
         setProgress(i);
@@ -63,7 +108,6 @@ const Dashboard = () => {
       parsedItems = parseCSVToAgile(text);
     } else if (ext === 'txt' || ext === 'md') {
       const text = await file.text();
-      // Phase 2: Parsing (20-60%)
       for (let i = 20; i <= 60; i += 5) {
         await new Promise(r => setTimeout(r, 40));
         setProgress(i);
@@ -73,10 +117,8 @@ const Dashboard = () => {
       detectedMilestones = result.milestones;
       parsedItems = result.items;
     } else {
-      // .mpp, .pdf, .docx — demonstrate with sample data
       detectedType = classifyDocument(file.name);
       const isCharter = detectedType === 'Project Charter' || file.name.toLowerCase().includes('charter');
-      // Phase 2: Parsing (20-60%)
       for (let i = 20; i <= 60; i += 5) {
         await new Promise(r => setTimeout(r, 40));
         setProgress(i);
@@ -102,7 +144,7 @@ const Dashboard = () => {
   }, [file]);
 
   const handleExport = useCallback(() => {
-    if (items.length === 0) return;
+    if (items.length === 0 || !hasAccess) return;
     const csv = exportToJiraCSV(items);
     const blob = new Blob([csv], { type: 'text/csv' });
     const url = URL.createObjectURL(blob);
@@ -111,7 +153,10 @@ const Dashboard = () => {
     a.download = 'agilebridge-backlog.csv';
     a.click();
     URL.revokeObjectURL(url);
-  }, [items]);
+  }, [items, hasAccess]);
+
+  const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
+  const isLocked = items.length > FREE_STORY_LIMIT && !hasAccess;
 
   const epics = items.filter(i => i.type === 'Epic').length;
   const stories = items.filter(i => i.type === 'User Story').length;
@@ -132,10 +177,19 @@ const Dashboard = () => {
             </div>
             {items.length > 0 && (
               <button
-                onClick={handleExport}
-                className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-4 py-2 rounded-sm text-sm transition-all hover:opacity-90 active:scale-95"
+                onClick={hasAccess ? handleExport : undefined}
+                disabled={!hasAccess}
+                className={`inline-flex items-center gap-2 font-medium px-4 py-2 rounded-sm text-sm transition-all ${
+                  hasAccess
+                    ? 'bg-accent text-accent-foreground hover:opacity-90 active:scale-95'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                }`}
               >
-                <Download className="w-4 h-4" />
+                {hasAccess ? (
+                  <Download className="w-4 h-4" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
                 Export to Jira CSV
               </button>
             )}
@@ -229,10 +283,14 @@ const Dashboard = () => {
 
               {/* Hint */}
               <p className="text-xs text-muted-foreground">
-                Click any row to expand its INVEST user story, description, and acceptance criteria.
+                {hasAccess
+                  ? 'Click any row to expand its INVEST user story, description, and acceptance criteria.'
+                  : `Showing ${FREE_STORY_LIMIT} of ${items.length} stories for free. Unlock the full backlog below.`}
               </p>
 
-              <BacklogTable items={items} />
+              <BacklogTable items={visibleItems} />
+
+              {isLocked && <PaywallOverlay itemCount={items.length} />}
             </>
           )}
         </div>
