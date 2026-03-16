@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const transition = { type: "spring", duration: 0.4, bounce: 0 };
+const transition = { type: "spring" as const, duration: 0.4, bounce: 0 };
 
 const LandingHero = () => {
   const navigate = useNavigate();

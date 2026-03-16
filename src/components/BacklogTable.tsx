@@ -22,7 +22,7 @@ const stagger = {
 
 const rowVariant = {
   hidden: { opacity: 0, y: 4 },
-  show: { opacity: 1, y: 0, transition: { type: "spring", duration: 0.35, bounce: 0 } },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, duration: 0.35, bounce: 0 } },
 };
 
 const BacklogTable = ({ items }: BacklogTableProps) => {
