@@ -44,7 +44,7 @@ const LandingHero = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.3 }}
-          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed"
         >
           Convert legacy project artifacts into platform-ready backlogs (Jira, Azure DevOps, ClickUp &amp; more).
           Upload .mpp, PDF, or CSV files and generate INVEST-standard user stories in minutes, not weekends.
