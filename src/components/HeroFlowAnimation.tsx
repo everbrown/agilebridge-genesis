@@ -231,7 +231,7 @@ const HeroFlowAnimation = () => {
   const StepComponent = steps[activeStep].component;
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-12">
+    <div className="w-full max-w-xl mx-auto mt-8 sm:mt-12">
       {/* Step indicators */}
       <div className="flex items-center justify-center gap-2 mb-6">
         {['Upload .mpp', 'Generate Stories', 'Populate Board'].map((label, i) => (
