@@ -9,7 +9,7 @@ const spring = { type: 'spring' as const, duration: 0.5, bounce: 0.1 };
 // ── Step 1: Messy .mpp file ─────────────────────────────────────────
 const MessyFile = () => (
   <div className="flex flex-col items-center gap-3">
-    <div className="relative w-[280px]">
+    <div className="relative w-[240px] sm:w-[280px]">
       {/* Messy file card */}
       <motion.div
         initial={{ rotate: -2, opacity: 0, y: 12 }}
@@ -74,7 +74,7 @@ const CleanStory = () => (
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ ...spring, delay: 0.15 }}
-      className="w-[320px] bg-card border border-primary/30 rounded-sm p-4 shadow-sm"
+      className="w-[260px] sm:w-[320px] bg-card border border-primary/30 rounded-sm p-3 sm:p-4 shadow-sm"
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-5 h-5 rounded-sm bg-primary/10 text-primary text-[9px] font-bold">US</span>
@@ -158,7 +158,7 @@ const JiraBoard = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ ...spring, delay: 0.15 }}
-        className="w-[340px] bg-card border border-border rounded-sm p-3 shadow-sm"
+        className="w-[280px] sm:w-[340px] bg-card border border-border rounded-sm p-2 sm:p-3 shadow-sm"
       >
         <div className="flex items-center gap-2 mb-3">
           <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Board View</span>
@@ -231,31 +231,32 @@ const HeroFlowAnimation = () => {
   const StepComponent = steps[activeStep].component;
 
   return (
-    <div className="w-full max-w-xl mx-auto mt-12">
+    <div className="w-full max-w-xl mx-auto mt-8 sm:mt-12">
       {/* Step indicators */}
-      <div className="flex items-center justify-center gap-2 mb-6">
+      <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
         {['Upload .mpp', 'Generate Stories', 'Populate Board'].map((label, i) => (
-          <div key={i} className="flex items-center gap-2">
+          <div key={i} className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setActiveStep(i)}
-              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-sm text-[10px] font-medium transition-all duration-300 ${
+              className={`flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-1 rounded-sm text-[9px] sm:text-[10px] font-medium transition-all duration-300 ${
                 i === activeStep
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted text-muted-foreground hover:bg-muted/80'
               }`}
             >
-              <span className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center text-[8px] font-bold">
+              <span className="w-3 h-3 sm:w-3.5 sm:h-3.5 rounded-full border border-current flex items-center justify-center text-[7px] sm:text-[8px] font-bold">
                 {i + 1}
               </span>
-              {label}
+              <span className="hidden sm:inline">{label}</span>
+              <span className="sm:hidden">{['Upload', 'Stories', 'Board'][i]}</span>
             </button>
-            {i < 2 && <ArrowRight className="w-3 h-3 text-muted-foreground/50" />}
+            {i < 2 && <ArrowRight className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-muted-foreground/50" />}
           </div>
         ))}
       </div>
 
       {/* Progress bar */}
-      <div className="flex gap-1 mb-6 px-8">
+      <div className="flex gap-1 mb-4 sm:mb-6 px-4 sm:px-8">
         {steps.map((_, i) => (
           <div key={i} className="flex-1 h-0.5 bg-muted rounded-full overflow-hidden">
             <motion.div
@@ -276,7 +277,7 @@ const HeroFlowAnimation = () => {
       </div>
 
       {/* Animated content */}
-      <div className="flex items-center justify-center min-h-[260px]">
+      <div className="flex items-center justify-center min-h-[220px] sm:min-h-[260px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={steps[activeStep].key}

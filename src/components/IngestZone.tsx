@@ -55,7 +55,7 @@ const IngestZone = ({ onFileAccepted, acceptedFile, onClear }: IngestZoneProps) 
       onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
       onDragLeave={() => setIsDragging(false)}
       onDrop={handleDrop}
-      className={`relative rounded-sm border-2 border-dashed p-12 transition-colors cursor-pointer ${
+      className={`relative rounded-sm border-2 border-dashed p-6 sm:p-12 transition-colors cursor-pointer ${
         isDragging ? 'border-primary bg-primary/5' : 'border-border bg-muted/30 hover:border-primary/50'
       }`}
     >
