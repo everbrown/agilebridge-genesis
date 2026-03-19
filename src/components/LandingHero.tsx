@@ -44,8 +44,8 @@ const LandingHero = () => {
           transition={{ ...transition, delay: 0.3 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Convert legacy project documentation into actionable Agile backlogs.
-          From .mpp files to Jira-ready exports in minutes, not weekends.
+          Convert Waterfall artifacts into Jira-ready backlogs.
+          Upload .mpp, PDF, or CSV files and generate INVEST-standard user stories in minutes, not weekends.
         </motion.p>
 
         <motion.div
