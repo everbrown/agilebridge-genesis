@@ -264,7 +264,7 @@ const Dashboard = () => {
               )}
 
               {/* Stats */}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                 <div className="surface-elevated rounded-sm p-4">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider">Total Items</p>
                   <p className="text-2xl font-bold tabular-nums text-foreground mt-1">{items.length}</p>

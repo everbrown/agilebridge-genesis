@@ -158,7 +158,7 @@ const JiraBoard = () => {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ ...spring, delay: 0.15 }}
-        className="w-[340px] bg-card border border-border rounded-sm p-3 shadow-sm"
+        className="w-[280px] sm:w-[340px] bg-card border border-border rounded-sm p-2 sm:p-3 shadow-sm"
       >
         <div className="flex items-center gap-2 mb-3">
           <span className="text-[10px] font-bold text-primary uppercase tracking-widest">Board View</span>

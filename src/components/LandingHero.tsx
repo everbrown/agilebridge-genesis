@@ -54,7 +54,7 @@ const LandingHero = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.4 }}
-          className="flex items-center justify-center gap-4"
+          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4"
         >
           <button
             onClick={() => navigate('/dashboard')}
