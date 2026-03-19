@@ -44,7 +44,7 @@ const LandingHero = () => {
           transition={{ ...transition, delay: 0.3 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Convert Waterfall artifacts into Jira-ready backlogs.
+          Convert legacy project artifacts into platform-ready backlogs (Jira, Azure DevOps, ClickUp &amp; more).
           Upload .mpp, PDF, or CSV files and generate INVEST-standard user stories in minutes, not weekends.
         </motion.p>
 
