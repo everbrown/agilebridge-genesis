@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import LogoMarquee from './LogoMarquee';
 
 const transition = { type: "spring" as const, duration: 0.4, bounce: 0 };
 
@@ -67,6 +68,14 @@ const LandingHero = () => {
           >
             Read Founder's Note
           </a>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.5 }}
+        >
+          <LogoMarquee />
         </motion.div>
       </div>
     </section>
