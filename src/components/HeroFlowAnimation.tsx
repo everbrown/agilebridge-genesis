@@ -256,7 +256,7 @@ const HeroFlowAnimation = () => {
       </div>
 
       {/* Progress bar */}
-      <div className="flex gap-1 mb-6 px-8">
+      <div className="flex gap-1 mb-4 sm:mb-6 px-4 sm:px-8">
         {steps.map((_, i) => (
           <div key={i} className="flex-1 h-0.5 bg-muted rounded-full overflow-hidden">
             <motion.div
