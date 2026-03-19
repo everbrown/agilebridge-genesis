@@ -345,11 +345,8 @@ export const parseTextContent = (content: string, filename: string): ParseResult
 
 /**
  * RFC 4180-compliant CSV field escaping.
- * Wraps in double-quotes if the value contains a comma, double-quote, or newline.
- * Internal double-quotes are escaped by doubling them.
  */
 const escapeCSVField = (value: string): string => {
-  // Strip any HTML tags
   const stripped = value.replace(/<[^>]*>/g, '');
   if (stripped.includes(',') || stripped.includes('"') || stripped.includes('\n') || stripped.includes('\r')) {
     return `"${stripped.replace(/"/g, '""')}"`;
@@ -358,37 +355,25 @@ const escapeCSVField = (value: string): string => {
 };
 
 /**
- * Exports backlog items to a universal RFC 4180-compliant CSV.
- * Headers are optimized for high auto-map success in Jira, Azure DevOps, ClickUp, and Monday.com import wizards.
+ * Exports backlog to a simple 4-column CSV: Summary, Description, Priority, Issue Type.
+ * User Story + Acceptance Criteria are merged into Description.
  */
-export const exportToJiraCSV = (items: AgileItem[], sourceFileType: string = 'MPP-Import'): string => {
-  const BOM = '\uFEFF'; // UTF-8 BOM for Excel compatibility
-  const headers = [
-    'Issue Type',
-    'Summary',
-    'Description',
-    'Acceptance Criteria',
-    'Priority',
-    'Story Points',
-    'Labels',
-  ];
+export const exportToJiraCSV = (items: AgileItem[]): string => {
+  const BOM = '\uFEFF';
+  const headers = ['Summary', 'Description', 'Priority', 'Issue Type'];
 
   const rows = items.map(item => {
-    // Format acceptance criteria as plain-text numbered list
-    const acText = item.acceptanceCriteria
+    const acLines = item.acceptanceCriteria
       .map((ac, i) => `${i + 1}. Given ${ac.given}, When ${ac.when}, Then ${ac.then}`)
       .join('\n');
 
-    const labels = `AgileBridge,${sourceFileType}`;
+    const description = `${item.description}\n\nAcceptance Criteria:\n${acLines}`;
 
     return [
-      escapeCSVField(item.type === 'Epic' ? 'Epic' : 'Story'),
       escapeCSVField(item.title),
-      escapeCSVField(item.description),
-      escapeCSVField(acText),
+      escapeCSVField(description),
       escapeCSVField(item.priority),
-      escapeCSVField(String(item.storyPoints)),
-      escapeCSVField(labels),
+      escapeCSVField(item.type === 'Epic' ? 'Epic' : 'Story'),
     ].join(',');
   });
 

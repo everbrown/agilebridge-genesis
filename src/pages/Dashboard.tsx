@@ -145,10 +145,7 @@ const Dashboard = () => {
 
   const handleExport = useCallback(() => {
     if (items.length === 0 || !hasAccess) return;
-    // Determine source file type label from uploaded file extension
-    const ext = file?.name.split('.').pop()?.toUpperCase() || 'FILE';
-    const sourceLabel = `${ext}-Import`;
-    const csv = exportToJiraCSV(items, sourceLabel);
+    const csv = exportToJiraCSV(items);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -156,7 +153,7 @@ const Dashboard = () => {
     a.download = 'agilebridge-backlog.csv';
     a.click();
     URL.revokeObjectURL(url);
-  }, [items, hasAccess, file]);
+  }, [items, hasAccess]);
 
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
   const isLocked = items.length > FREE_STORY_LIMIT && !hasAccess;
@@ -179,27 +176,22 @@ const Dashboard = () => {
               </h1>
             </div>
             {items.length > 0 && (
-              <div className="text-right">
-                <button
-                  onClick={hasAccess ? handleExport : undefined}
-                  disabled={!hasAccess}
-                  className={`inline-flex items-center gap-2 font-medium px-4 py-2 rounded-sm text-sm transition-all ${
-                    hasAccess
-                      ? 'bg-accent text-accent-foreground hover:opacity-90 active:scale-95'
-                      : 'bg-muted text-muted-foreground cursor-not-allowed'
-                  }`}
-                >
-                  {hasAccess ? (
-                    <Download className="w-4 h-4" />
-                  ) : (
-                    <Lock className="w-4 h-4" />
-                  )}
-                  Download CSV
-                </button>
-                <p className="text-[10px] text-muted-foreground mt-1">
-                  Optimized for Jira, ADO, ClickUp &amp; Monday.com import wizards.
-                </p>
-              </div>
+              <button
+                onClick={hasAccess ? handleExport : undefined}
+                disabled={!hasAccess}
+                className={`inline-flex items-center gap-2 font-medium px-4 py-2 rounded-sm text-sm transition-all ${
+                  hasAccess
+                    ? 'bg-accent text-accent-foreground hover:opacity-90 active:scale-95'
+                    : 'bg-muted text-muted-foreground cursor-not-allowed'
+                }`}
+              >
+                {hasAccess ? (
+                  <Download className="w-4 h-4" />
+                ) : (
+                  <Lock className="w-4 h-4" />
+                )}
+                Download CSV
+              </button>
             )}
           </div>
         </header>
