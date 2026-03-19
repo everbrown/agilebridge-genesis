@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LogoMarquee from './LogoMarquee';
+import HeroFlowAnimation from './HeroFlowAnimation';
 
 const transition = { type: "spring" as const, duration: 0.4, bounce: 0 };
 
@@ -74,6 +75,14 @@ const LandingHero = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.5 }}
+        >
+          <HeroFlowAnimation />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.6 }}
         >
           <LogoMarquee />
         </motion.div>
