@@ -343,24 +343,54 @@ export const parseTextContent = (content: string, filename: string): ParseResult
   };
 };
 
-export const exportToJiraCSV = (items: AgileItem[]): string => {
-  const headers = ['Summary', 'Issue Type', 'Description', 'Priority', 'Story Points', 'Original Estimate', 'Acceptance Criteria', 'Epic Link', 'Status'];
+/**
+ * RFC 4180-compliant CSV field escaping.
+ * Wraps in double-quotes if the value contains a comma, double-quote, or newline.
+ * Internal double-quotes are escaped by doubling them.
+ */
+const escapeCSVField = (value: string): string => {
+  // Strip any HTML tags
+  const stripped = value.replace(/<[^>]*>/g, '');
+  if (stripped.includes(',') || stripped.includes('"') || stripped.includes('\n') || stripped.includes('\r')) {
+    return `"${stripped.replace(/"/g, '""')}"`;
+  }
+  return stripped;
+};
+
+/**
+ * Exports backlog items to a universal RFC 4180-compliant CSV.
+ * Headers are optimized for high auto-map success in Jira, Azure DevOps, ClickUp, and Monday.com import wizards.
+ */
+export const exportToJiraCSV = (items: AgileItem[], sourceFileType: string = 'MPP-Import'): string => {
+  const BOM = '\uFEFF'; // UTF-8 BOM for Excel compatibility
+  const headers = [
+    'Issue Type',
+    'Summary',
+    'Description',
+    'Acceptance Criteria',
+    'Priority',
+    'Story Points',
+    'Labels',
+  ];
+
   const rows = items.map(item => {
+    // Format acceptance criteria as plain-text numbered list
     const acText = item.acceptanceCriteria
-      .map((ac, i) => `AC${i + 1}: Given ${ac.given}, When ${ac.when}, Then ${ac.then}`)
-      .join(' | ');
+      .map((ac, i) => `${i + 1}. Given ${ac.given}, When ${ac.when}, Then ${ac.then}`)
+      .join('\n');
+
+    const labels = `AgileBridge,${sourceFileType}`;
+
     return [
-      `"${item.title}"`,
-      item.type === 'Epic' ? 'Epic' : 'Story',
-      `"${item.description}"`,
-      item.priority,
-      item.storyPoints,
-      item.estimate,
-      `"${acText}"`,
-      item.parentEpic ? `"${item.parentEpic}"` : '',
-      item.status,
+      escapeCSVField(item.type === 'Epic' ? 'Epic' : 'Story'),
+      escapeCSVField(item.title),
+      escapeCSVField(item.description),
+      escapeCSVField(acText),
+      escapeCSVField(item.priority),
+      escapeCSVField(String(item.storyPoints)),
+      escapeCSVField(labels),
     ].join(',');
   });
 
-  return [headers.join(','), ...rows].join('\n');
+  return BOM + [headers.join(','), ...rows].join('\r\n');
 };
