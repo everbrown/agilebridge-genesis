@@ -1,11 +1,13 @@
 import logoJira from '@/assets/logo-jira.png';
 import logoAzure from '@/assets/logo-azure-devops.png';
 import logoClickup from '@/assets/logo-clickup.png';
+import logoMonday from '@/assets/logo-monday.png';
 
 const logos = [
   { src: logoJira, alt: 'Jira' },
   { src: logoAzure, alt: 'Azure DevOps' },
   { src: logoClickup, alt: 'ClickUp' },
+  { src: logoMonday, alt: 'Monday.com' },
 ];
 
 const LogoMarquee = () => {
