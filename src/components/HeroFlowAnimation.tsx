@@ -74,7 +74,7 @@ const CleanStory = () => (
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ ...spring, delay: 0.15 }}
-      className="w-[320px] bg-card border border-primary/30 rounded-sm p-4 shadow-sm"
+      className="w-[260px] sm:w-[320px] bg-card border border-primary/30 rounded-sm p-3 sm:p-4 shadow-sm"
     >
       <div className="flex items-center gap-2 mb-3">
         <span className="inline-flex items-center justify-center w-5 h-5 rounded-sm bg-primary/10 text-primary text-[9px] font-bold">US</span>
