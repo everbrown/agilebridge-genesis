@@ -277,7 +277,7 @@ const HeroFlowAnimation = () => {
       </div>
 
       {/* Animated content */}
-      <div className="flex items-center justify-center min-h-[260px]">
+      <div className="flex items-center justify-center min-h-[220px] sm:min-h-[260px]">
         <AnimatePresence mode="wait">
           <motion.div
             key={steps[activeStep].key}
