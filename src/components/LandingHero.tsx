@@ -2,6 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LogoMarquee from './LogoMarquee';
+import HeroFlowAnimation from './HeroFlowAnimation';
 
 const transition = { type: "spring" as const, duration: 0.4, bounce: 0 };
 
