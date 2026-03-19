@@ -69,6 +69,14 @@ const LandingHero = () => {
             Read Founder's Note
           </a>
         </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.5 }}
+        >
+          <LogoMarquee />
+        </motion.div>
       </div>
     </section>
   );
