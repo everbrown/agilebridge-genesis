@@ -9,7 +9,7 @@ const spring = { type: 'spring' as const, duration: 0.5, bounce: 0.1 };
 // ── Step 1: Messy .mpp file ─────────────────────────────────────────
 const MessyFile = () => (
   <div className="flex flex-col items-center gap-3">
-    <div className="relative w-[280px]">
+    <div className="relative w-[240px] sm:w-[280px]">
       {/* Messy file card */}
       <motion.div
         initial={{ rotate: -2, opacity: 0, y: 12 }}
