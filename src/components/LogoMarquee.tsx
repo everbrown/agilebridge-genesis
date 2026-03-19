@@ -28,7 +28,7 @@ const LogoMarquee = () => {
               key={i}
               src={logo.src}
               alt={logo.alt}
-              className="h-7 max-w-[120px] w-auto shrink-0 opacity-40 grayscale object-contain"
+              className="h-7 max-w-[120px] w-auto shrink-0 opacity-40 grayscale hover:opacity-100 hover:grayscale-0 transition-all duration-300 object-contain"
             />
           ))}
         </div>
