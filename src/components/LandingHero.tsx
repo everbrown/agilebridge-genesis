@@ -33,7 +33,7 @@ const LandingHero = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.2 }}
-          className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-6 leading-[0.95]"
+          className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-4 sm:mb-6 leading-[0.95]"
         >
           Legacy plans,
           <br />
