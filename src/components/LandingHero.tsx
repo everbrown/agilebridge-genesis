@@ -76,6 +76,14 @@ const LandingHero = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.5 }}
         >
+          <HeroFlowAnimation />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.6 }}
+        >
           <LogoMarquee />
         </motion.div>
       </div>
