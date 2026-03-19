@@ -145,10 +145,7 @@ const Dashboard = () => {
 
   const handleExport = useCallback(() => {
     if (items.length === 0 || !hasAccess) return;
-    // Determine source file type label from uploaded file extension
-    const ext = file?.name.split('.').pop()?.toUpperCase() || 'FILE';
-    const sourceLabel = `${ext}-Import`;
-    const csv = exportToJiraCSV(items, sourceLabel);
+    const csv = exportToJiraCSV(items);
     const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -156,7 +153,7 @@ const Dashboard = () => {
     a.download = 'agilebridge-backlog.csv';
     a.click();
     URL.revokeObjectURL(url);
-  }, [items, hasAccess, file]);
+  }, [items, hasAccess]);
 
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
   const isLocked = items.length > FREE_STORY_LIMIT && !hasAccess;
