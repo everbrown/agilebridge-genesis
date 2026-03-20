@@ -5,6 +5,7 @@ import IngestZone from '@/components/IngestZone';
 import BacklogTable from '@/components/BacklogTable';
 import ProgressBar from '@/components/ProgressBar';
 import PaywallOverlay from '@/components/PaywallOverlay';
+import JiraSyncModal from '@/components/JiraSyncModal';
 import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
 import {
