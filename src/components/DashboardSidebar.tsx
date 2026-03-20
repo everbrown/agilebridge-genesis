@@ -1,5 +1,7 @@
-import { LayoutDashboard, Upload, FileStack, Settings, ArrowLeft } from 'lucide-react';
+import { LayoutDashboard, Upload, FileStack, Settings, ArrowLeft, LogOut } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', active: true },
@@ -10,6 +12,22 @@ const navItems = [
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserEmail(session?.user?.email ?? null);
+    });
+  }, []);
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    navigate('/');
+  };
+
+  const initials = userEmail
+    ? userEmail.split('@')[0].slice(0, 2).toUpperCase()
+    : '??';
 
   return (
     <aside className="w-64 shrink-0 h-screen sticky top-0 border-r border-border bg-sidebar flex flex-col">
@@ -39,16 +57,22 @@ const DashboardSidebar = () => {
         ))}
       </nav>
 
-      <div className="p-4 border-t border-border">
+      <div className="p-4 border-t border-border space-y-3">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-sm bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
-            PM
+            {initials}
           </div>
-          <div>
-            <p className="text-xs font-medium text-foreground">PMO User</p>
-            <p className="text-[10px] text-muted-foreground">Enterprise Plan</p>
+          <div className="min-w-0 flex-1">
+            <p className="text-xs font-medium text-foreground truncate">{userEmail ?? 'Loading...'}</p>
           </div>
         </div>
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          Sign out
+        </button>
       </div>
     </aside>
   );

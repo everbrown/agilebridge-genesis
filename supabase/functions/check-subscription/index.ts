@@ -83,20 +83,30 @@ serve(async (req) => {
       limit: 10,
     });
 
+    const SPRINT_PASS_HOURS = 24;
     const completedPayment = sessions.data.find(
       s => s.mode === "payment" && s.payment_status === "paid"
     );
 
     if (completedPayment) {
-      logStep("One-time payment found", { sessionId: completedPayment.id });
-      return new Response(JSON.stringify({
-        subscribed: false,
-        hasAccess: true,
-        payment_type: "one_time",
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
+      const purchasedAt = new Date((completedPayment as any).created * 1000);
+      const expiresAt = new Date(purchasedAt.getTime() + SPRINT_PASS_HOURS * 60 * 60 * 1000);
+      const now = new Date();
+
+      if (now < expiresAt) {
+        logStep("Sprint Pass active", { purchasedAt: purchasedAt.toISOString(), expiresAt: expiresAt.toISOString() });
+        return new Response(JSON.stringify({
+          subscribed: false,
+          hasAccess: true,
+          payment_type: "one_time",
+          expires_at: expiresAt.toISOString(),
+        }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 200,
+        });
+      } else {
+        logStep("Sprint Pass expired", { purchasedAt: purchasedAt.toISOString(), expiresAt: expiresAt.toISOString() });
+      }
     }
 
     logStep("No active access found");
