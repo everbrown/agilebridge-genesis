@@ -33,11 +33,11 @@ const LandingHero = () => {
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.2 }}
-          className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-4 sm:mb-6 leading-[0.95]"
+          className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-4 sm:mb-6 leading-[0.95] text-balance"
         >
-          Still copy-pasting
+          Your legacy plans
           <br />
-          <span className="text-primary">Gantt charts into Jira?</span>
+          <span className="text-primary">deserve modern velocity.</span>
         </motion.h1>
 
         <motion.p
