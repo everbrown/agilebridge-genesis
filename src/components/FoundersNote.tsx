@@ -23,22 +23,23 @@ const FoundersNote = () => {
 
           <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
             <p>
-              We built AgileBridge because we spent too many weekends manually transcribing
-              Gantt charts into Jira. It wasn't just tedious; it was a loss of structural intent.
+              I've sat in the meeting where someone drops a 400-line Microsoft Project file
+              on a dev team and says "put this in Jira by Monday." I've been the one doing it —
+              manually, row by row, losing the hierarchy with every paste.
             </p>
             <p>
-              Every time a project manager exported a Microsoft Project file and handed it to a
-              dev team, the hierarchy — the careful nesting of phases, deliverables, and tasks — was
-              flattened into a list of tickets with no context.
+              The worst part isn't the tedium. It's watching carefully nested phases, deliverables,
+              and dependencies collapse into a flat list of context-free tickets. By the time
+              you're done, the plan doesn't mean what it used to mean.
             </p>
             <p>
-              We've automated the translation, so you can focus on the build.
-              AgileBridge preserves the Work Breakdown Structure of your legacy plans and maps them
-              directly to Epics and User Stories, maintaining the relationships that matter.
+              We built AgileBridge because that weekend shouldn't exist.
+              Upload the file, keep the structure, and get Epics and User Stories
+              that actually reflect what was planned — not a guessed-at backlog.
             </p>
             <p className="text-foreground font-medium pt-2">
-              The bridge between legacy planning and agile execution is built on structural integrity,
-              not generative fluff.
+              If you've ever dreaded opening an .mpp file on a Friday afternoon,
+              this is for you.
             </p>
           </div>
 
