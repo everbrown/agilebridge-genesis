@@ -76,6 +76,17 @@ const Dashboard = () => {
     return () => window.removeEventListener('focus', handleFocus);
   }, [checkAccess]);
 
+  // Close export dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleFileAccepted = useCallback((f: File) => {
     setFile(f);
     setItems([]);
