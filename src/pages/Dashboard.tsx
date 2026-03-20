@@ -31,6 +31,9 @@ const Dashboard = () => {
   const [milestones, setMilestones] = useState<string[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(false);
+  const [jiraModalOpen, setJiraModalOpen] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+  const exportRef = useRef<HTMLDivElement>(null);
 
   // Check if user has paid access
   const checkAccess = useCallback(async () => {
