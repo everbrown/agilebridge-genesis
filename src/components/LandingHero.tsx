@@ -25,7 +25,7 @@ const LandingHero = () => {
           className="mb-4"
         >
           <span className="inline-flex items-center gap-2 px-3 py-1 text-xs font-medium tracking-wider uppercase border border-border rounded-sm bg-card text-muted-foreground">
-            B2B Enterprise Tool
+            Stop re-typing. Start shipping.
           </span>
         </motion.div>
 
@@ -35,9 +35,9 @@ const LandingHero = () => {
           transition={{ ...transition, delay: 0.2 }}
           className="text-3xl sm:text-5xl md:text-7xl font-bold tracking-tighter text-foreground mb-4 sm:mb-6 leading-[0.95]"
         >
-          Legacy plans,
+          Still copy-pasting
           <br />
-          <span className="text-primary">meet modern velocity.</span>
+          <span className="text-primary">Gantt charts into Jira?</span>
         </motion.h1>
 
         <motion.p
@@ -46,8 +46,9 @@ const LandingHero = () => {
           transition={{ ...transition, delay: 0.3 }}
           className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed"
         >
-          Convert legacy project artifacts into platform-ready backlogs (Jira, Azure DevOps, ClickUp &amp; more).
-          Upload .mpp, PDF, or CSV files and generate INVEST-standard user stories in minutes, not weekends.
+          You inherited a 300-task .mpp file and a deadline. Now you're spending the weekend
+          flattening phases into tickets, losing every parent-child relationship along the way.
+          Drop the file here — we'll turn it into INVEST-ready stories on your board in minutes.
         </motion.p>
 
         <motion.div
