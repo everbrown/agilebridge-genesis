@@ -1,34 +1,33 @@
-import { Lock, CreditCard } from 'lucide-react';
+import { Lock, CreditCard, Star, Building2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { TIERS } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 interface PaywallOverlayProps {
   itemCount: number;
 }
 
 const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<string | null>(null);
+  const navigate = useNavigate();
 
-  const handleUnlock = async () => {
-    setLoading(true);
+  const handleUnlock = async (tierKey: keyof typeof TIERS) => {
+    const tier = TIERS[tierKey];
+    setLoading(tierKey);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast({
-          title: "Sign in required",
-          description: "Please sign in to unlock the full backlog.",
-          variant: "destructive",
-        });
+        navigate('/login?returnTo=/dashboard');
         return;
       }
 
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          priceId: TIERS.sprint_pass.price_id,
-          mode: TIERS.sprint_pass.mode,
+          priceId: tier.price_id,
+          mode: tier.mode,
         },
       });
 
@@ -43,7 +42,7 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
         variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
@@ -71,16 +70,47 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
             </p>
           </div>
           <button
-            onClick={handleUnlock}
-            disabled={loading}
+            onClick={() => handleUnlock('sprint_pass')}
+            disabled={loading !== null}
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-medium px-6 py-2.5 rounded-sm text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
           >
             <CreditCard className="w-4 h-4" />
-            {loading ? 'Opening checkout...' : `Unlock Full Backlog — $${TIERS.sprint_pass.price}`}
+            {loading === 'sprint_pass' ? 'Opening checkout...' : `Unlock Full Backlog — $${TIERS.sprint_pass.price}`}
           </button>
           <p className="text-xs text-muted-foreground">
             One-time payment · 24-hour full access · Up to 3 documents
           </p>
+
+          {/* Tier upsells */}
+          <div className="w-full border-t border-border pt-4 mt-2">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">
+              Or go unlimited
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <button
+                onClick={() => handleUnlock('professional')}
+                disabled={loading !== null}
+                className="flex items-start gap-3 p-3 rounded-sm border border-border bg-background text-left transition-all hover:border-primary/40 hover:bg-muted/50 disabled:opacity-50"
+              >
+                <Star className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{TIERS.professional.name} — ${TIERS.professional.price}/mo</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{TIERS.professional.description}</p>
+                </div>
+              </button>
+              <button
+                onClick={() => handleUnlock('enterprise')}
+                disabled={loading !== null}
+                className="flex items-start gap-3 p-3 rounded-sm border border-border bg-background text-left transition-all hover:border-primary/40 hover:bg-muted/50 disabled:opacity-50"
+              >
+                <Building2 className="w-4 h-4 text-primary mt-0.5 shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-foreground">{TIERS.enterprise.name} — ${TIERS.enterprise.price}/mo</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{TIERS.enterprise.description}</p>
+                </div>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </motion.div>
