@@ -185,22 +185,44 @@ const Dashboard = () => {
               </h1>
             </div>
             {items.length > 0 && (
-              <button
-                onClick={hasAccess ? handleExport : undefined}
-                disabled={!hasAccess}
-                className={`inline-flex items-center gap-2 font-medium px-4 py-2 rounded-sm text-sm transition-all ${
-                  hasAccess
-                    ? 'bg-accent text-accent-foreground hover:opacity-90 active:scale-95'
-                    : 'bg-muted text-muted-foreground cursor-not-allowed'
-                }`}
-              >
-                {hasAccess ? (
-                  <Download className="w-4 h-4" />
-                ) : (
+              hasAccess ? (
+                <div className="relative" ref={exportRef}>
+                  <button
+                    onClick={() => setExportMenuOpen(!exportMenuOpen)}
+                    className="inline-flex items-center gap-2 bg-accent text-accent-foreground font-medium px-4 py-2 rounded-sm text-sm transition-all hover:opacity-90 active:scale-95"
+                  >
+                    <Download className="w-4 h-4" />
+                    Export
+                    <ChevronDown className="w-3 h-3" />
+                  </button>
+                  {exportMenuOpen && (
+                    <div className="absolute right-0 mt-1 w-52 bg-card border border-border rounded-sm shadow-lg z-30">
+                      <button
+                        onClick={() => { handleExport(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left"
+                      >
+                        <Download className="w-4 h-4 text-muted-foreground" />
+                        Download Jira CSV
+                      </button>
+                      <button
+                        onClick={() => { setJiraModalOpen(true); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <Upload className="w-4 h-4 text-muted-foreground" />
+                        Push to Jira Cloud
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  disabled
+                  className="inline-flex items-center gap-2 bg-muted text-muted-foreground cursor-not-allowed font-medium px-4 py-2 rounded-sm text-sm"
+                >
                   <Lock className="w-4 h-4" />
-                )}
-                Download CSV
-              </button>
+                  Export
+                </button>
+              )
             )}
           </div>
         </header>
