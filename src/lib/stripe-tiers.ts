@@ -21,7 +21,7 @@ export const TIERS = {
     product_id: "prod_U9m7ZX0CNPgStB",
     price: 149,
     mode: "subscription" as const,
-    description: "5 User seats, custom brand voice for stories, and direct Jira/ServiceNow API sync.",
+    description: "5 User seats, custom brand voice for stories, and direct Jira API sync.",
   },
 } as const;
 
