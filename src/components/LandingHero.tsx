@@ -17,7 +17,7 @@ const LandingHero = () => {
                           repeating-linear-gradient(90deg, hsl(var(--foreground)) 0px, transparent 1px, transparent 64px)`,
       }} />
 
-      <div className="relative z-10 max-w-4xl mx-auto px-6 sm:px-8 text-center">
+      <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-8 text-center min-w-0">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
