@@ -48,7 +48,7 @@ const LandingHero = () => {
         >
           You inherited a 300-task .mpp file and a deadline. Now you're spending the weekend
           flattening phases into tickets, losing every parent-child relationship along the way.
-          Drop the file here — we'll turn it into INVEST-ready stories on your board in minutes.
+          Drop the file here — we'll turn it into INVEST-ready stories in Jira, Azure DevOps, ClickUp, or wherever your team works.
         </motion.p>
 
         <motion.div
