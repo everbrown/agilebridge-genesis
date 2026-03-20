@@ -1,5 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
-import { Download, Zap, FileSearch, Milestone, Lock } from 'lucide-react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import IngestZone from '@/components/IngestZone';
 import BacklogTable from '@/components/BacklogTable';
