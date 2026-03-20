@@ -326,6 +326,7 @@ const Dashboard = () => {
           )}
         </div>
       </main>
+      <JiraSyncModal open={jiraModalOpen} onClose={() => setJiraModalOpen(false)} items={items} />
     </div>
   );
 };
