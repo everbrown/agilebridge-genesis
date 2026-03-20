@@ -3,13 +3,31 @@ import { useNavigate } from 'react-router-dom';
 import { lovable } from '@/integrations/lovable/index';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { Checkbox } from '@/components/ui/checkbox';
+
+const MARKETING_OPT_IN_KEY = 'ab_marketing_opt_in';
 
 const Login = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [marketingOptIn, setMarketingOptIn] = useState(false);
 
   useEffect(() => {
-    // If already logged in, redirect to dashboard
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        // Persist marketing consent from localStorage (set before OAuth redirect)
+        const optIn = localStorage.getItem(MARKETING_OPT_IN_KEY) === 'true';
+        if (optIn) {
+          await supabase.from('profiles').update({ marketing_opt_in: true, updated_at: new Date().toISOString() }).eq('id', session.user.id);
+          localStorage.removeItem(MARKETING_OPT_IN_KEY);
+        }
+        const params = new URLSearchParams(window.location.search);
+        const returnTo = params.get('returnTo') || '/dashboard';
+        navigate(returnTo, { replace: true });
+      }
+    });
+
+    // If already logged in, redirect
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         const params = new URLSearchParams(window.location.search);
@@ -17,10 +35,14 @@ const Login = () => {
         navigate(returnTo, { replace: true });
       }
     });
+
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   const handleGoogleSignIn = async () => {
     setLoading(true);
+    // Store opt-in preference before redirect
+    localStorage.setItem(MARKETING_OPT_IN_KEY, String(marketingOptIn));
     try {
       const { error } = await lovable.auth.signInWithOAuth("google", {
         redirect_uri: window.location.origin,
@@ -32,6 +54,7 @@ const Login = () => {
         description: err.message || "Could not sign in with Google.",
         variant: "destructive",
       });
+      localStorage.removeItem(MARKETING_OPT_IN_KEY);
       setLoading(false);
     }
   };
@@ -61,6 +84,18 @@ const Login = () => {
           </svg>
           {loading ? 'Signing in...' : 'Continue with Google'}
         </button>
+
+        <div className="flex items-start gap-2 text-left">
+          <Checkbox
+            id="marketing"
+            checked={marketingOptIn}
+            onCheckedChange={(checked) => setMarketingOptIn(checked === true)}
+            className="mt-0.5"
+          />
+          <label htmlFor="marketing" className="text-sm text-muted-foreground cursor-pointer select-none leading-tight">
+            Keep me updated on new AgileBridge features and templates.
+          </label>
+        </div>
 
         <p className="text-xs text-muted-foreground">
           By signing in, you agree to our Terms of Service and Privacy Policy.
