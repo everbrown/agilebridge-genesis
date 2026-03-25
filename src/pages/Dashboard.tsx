@@ -8,12 +8,12 @@ import PaywallOverlay from '@/components/PaywallOverlay';
 import JiraSyncModal from '@/components/JiraSyncModal';
 import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
+import { parseDocumentWithAI, aiResponseToRawTasks } from '@/lib/parse-document-ai';
+import { toast } from '@/hooks/use-toast';
 import {
   AgileItem,
   ParseResult,
   DocumentType,
-  generateSampleMPPData,
-  generateSampleCharterData,
   parseMPPToAgile,
   parseCSVToAgile,
   parseTextContent,
@@ -132,18 +132,63 @@ const Dashboard = () => {
       detectedMilestones = result.milestones;
       parsedItems = result.items;
     } else {
+      // For MPP, PDF, DOCX — use 1min.AI to extract real content
       detectedType = classifyDocument(file.name);
-      const isCharter = detectedType === 'Project Charter' || file.name.toLowerCase().includes('charter');
-      for (let i = 20; i <= 60; i += 5) {
-        await new Promise(r => setTimeout(r, 40));
-        setProgress(i);
+      try {
+        const aiResponse = await parseDocumentWithAI(file);
+        for (let i = 20; i <= 50; i += 5) {
+          await new Promise(r => setTimeout(r, 40));
+          setProgress(i);
+        }
+
+        // Extract text content for milestone detection
+        const textContent = (aiResponse.content || aiResponse.text || aiResponse.result || '') as string;
+        if (textContent) {
+          detectedMilestones = extractMilestones(textContent);
+          detectedType = classifyDocument(file.name, textContent);
+        }
+
+        // Convert AI response to raw tasks then to agile items
+        const rawTasks = aiResponseToRawTasks(aiResponse);
+        for (let i = 50; i <= 60; i += 5) {
+          await new Promise(r => setTimeout(r, 40));
+          setProgress(i);
+        }
+
+        if (rawTasks.length > 0) {
+          parsedItems = parseMPPToAgile(rawTasks);
+        } else if (textContent) {
+          // Fallback: parse the text content directly
+          const result: ParseResult = parseTextContent(textContent, file.name);
+          detectedType = result.documentType;
+          detectedMilestones = result.milestones.length > 0 ? result.milestones : detectedMilestones;
+          parsedItems = result.items;
+        }
+      } catch (err: any) {
+        console.error('AI parsing failed, falling back to text extraction:', err);
+        toast({
+          title: "AI parsing unavailable",
+          description: "Using basic text extraction instead. For best results, try a CSV or text file.",
+          variant: "destructive",
+        });
+        // Fallback: try reading as text
+        try {
+          const text = await file.text();
+          const result: ParseResult = parseTextContent(text, file.name);
+          detectedType = result.documentType;
+          detectedMilestones = result.milestones;
+          parsedItems = result.items;
+        } catch {
+          // Binary file we can't read — show error
+          setIsProcessing(false);
+          toast({
+            title: "Could not parse file",
+            description: "This file format couldn't be processed. Please try a PDF, CSV, or text file.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
-      const sampleTasks = isCharter ? generateSampleCharterData() : generateSampleMPPData();
-      detectedType = isCharter ? 'Project Charter' : 'Work Breakdown Structure';
-      parsedItems = parseMPPToAgile(sampleTasks);
-      detectedMilestones = isCharter
-        ? ['Stakeholder alignment complete', 'Legacy systems inventoried', 'Cloud migration go-live', 'Agile training rollout']
-        : ['Infrastructure audit complete', 'CI/CD pipelines operational', 'SSO integration live', 'API Gateway v2 deployed'];
     }
 
     // Phase 3: INVEST story generation (60-100%)
