@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const EFFECTIVE_DATE = 'July 14, 2025';
+const EFFECTIVE_DATE = 'March 25, 2026';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <>
