@@ -75,15 +75,14 @@ serve(async (req) => {
     const project = await projectRes.json();
     logStep("Jira project found", { name: project.name, key: project.key });
 
-    // Get issue types for the project
-    const metaRes = await fetch(`${jiraBaseUrl}/issue/createmeta?projectKeys=${projectKey}&expand=projects.issuetypes`, { headers });
+    // Get issue types using the non-deprecated endpoint
+    const metaRes = await fetch(`${jiraBaseUrl}/issue/createmeta/issuetypes?projectKeys=${projectKey}`, { headers });
     if (!metaRes.ok) {
       throw new Error(`Failed to fetch issue types: ${metaRes.status}`);
     }
-    const meta = await metaRes.json();
-    const issueTypes = meta.projects?.[0]?.issuetypes || [];
-    const epicType = issueTypes.find((t: any) => t.name === 'Epic');
-    const storyType = issueTypes.find((t: any) => t.name === 'Story') || issueTypes.find((t: any) => t.name === 'Task');
+    const issueTypes = await metaRes.json();
+    const epicType = issueTypes.values?.find((t: any) => t.name === 'Epic') || issueTypes.find?.((t: any) => t.name === 'Epic');
+    const storyType = issueTypes.values?.find((t: any) => t.name === 'Story') || issueTypes.values?.find((t: any) => t.name === 'Task') || issueTypes.find?.((t: any) => t.name === 'Story') || issueTypes.find?.((t: any) => t.name === 'Task');
 
     if (!storyType) throw new Error("No Story or Task issue type found in project");
 
