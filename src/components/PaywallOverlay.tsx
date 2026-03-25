@@ -24,21 +24,29 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
         return;
       }
 
-      const { data, error } = await supabase.functions.invoke('create-checkout', {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Checkout request timed out. Please try again.')), 15000)
+      );
+
+      const checkoutPromise = supabase.functions.invoke('create-checkout', {
         body: {
           priceId: tier.price_id,
           mode: tier.mode,
         },
       });
 
+      const { data, error } = await Promise.race([checkoutPromise, timeoutPromise]) as any;
+
       if (error) throw error;
       if (data?.url) {
         window.open(data.url, '_blank');
+      } else {
+        throw new Error('No checkout URL returned. Please try again.');
       }
     } catch (err: any) {
       toast({
         title: "Checkout error",
-        description: err.message || "Could not start checkout.",
+        description: err.message || "Could not start checkout. Please try again.",
         variant: "destructive",
       });
     } finally {

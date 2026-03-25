@@ -1,7 +1,8 @@
-import { LayoutDashboard, Upload, FileStack, Settings, ArrowLeft, LogOut } from 'lucide-react';
+import { LayoutDashboard, Upload, FileStack, Settings, ArrowLeft, LogOut, CreditCard } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', active: true },
@@ -13,6 +14,7 @@ const navItems = [
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -23,6 +25,25 @@ const DashboardSidebar = () => {
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     navigate('/');
+  };
+
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('customer-portal');
+      if (error) throw error;
+      if (data?.url) {
+        window.open(data.url, '_blank');
+      }
+    } catch (err: any) {
+      toast({
+        title: "Could not open billing portal",
+        description: err.message || "Please try again later.",
+        variant: "destructive",
+      });
+    } finally {
+      setPortalLoading(false);
+    }
   };
 
   const initials = userEmail
@@ -66,6 +87,14 @@ const DashboardSidebar = () => {
             <p className="text-xs font-medium text-foreground truncate">{userEmail ?? 'Loading...'}</p>
           </div>
         </div>
+        <button
+          onClick={handleManageSubscription}
+          disabled={portalLoading}
+          className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+        >
+          <CreditCard className="w-3.5 h-3.5" />
+          {portalLoading ? 'Opening...' : 'Manage Subscription'}
+        </button>
         <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"

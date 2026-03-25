@@ -1,6 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
+import { RawTask } from "./mpp-parser";
 
 export interface ParseDocumentResponse {
+  tasks?: RawTask[];
+  content?: string;
+  error?: string;
   [key: string]: unknown;
 }
 
@@ -37,4 +41,52 @@ export const parseDocumentWithAI = async (file: File): Promise<ParseDocumentResp
   }
 
   return res.json();
+};
+
+/**
+ * Converts raw AI-parsed text content into RawTask[] format
+ * by extracting structured items from the response.
+ */
+export const aiResponseToRawTasks = (response: ParseDocumentResponse): RawTask[] => {
+  // If the API returned structured tasks directly
+  if (response.tasks && Array.isArray(response.tasks)) {
+    return response.tasks;
+  }
+
+  // If the API returned text content, parse it into tasks
+  const content = response.content || response.text || response.result || '';
+  if (typeof content !== 'string' || content.length < 10) {
+    return [];
+  }
+
+  // Parse text content into requirement lines
+  const lines = (content as string)
+    .split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 5);
+
+  const requirementLines = lines.filter(l =>
+    /^[-•*]\s/.test(l) ||
+    /^\d+[\.\)]\s/.test(l) ||
+    /^(req|requirement|task|feature|story|item|phase|milestone|epic)/i.test(l)
+  );
+
+  const sourceLines = requirementLines.length > 0 ? requirementLines : lines.slice(0, 30);
+
+  return sourceLines.map((line, idx) => {
+    const cleanLine = line.replace(/^[-•*\d.\)]+\s*/, '').trim();
+    const isTopLevel = /^(phase|epic|milestone|section|module)/i.test(cleanLine) || idx % 5 === 0;
+
+    return {
+      uid: String(idx + 1),
+      name: cleanLine,
+      outlineLevel: isTopLevel ? 1 : 2,
+      outlineNumber: isTopLevel
+        ? String(Math.floor(idx / 5) + 1)
+        : `${Math.floor(idx / 5) + 1}.${(idx % 5)}`,
+      duration: 960 + Math.floor(Math.random() * 3840),
+      priority: 400 + Math.floor(Math.random() * 500),
+      percentComplete: 0,
+    };
+  });
 };
