@@ -88,6 +88,26 @@ serve(async (req) => {
 
     logStep("Issue types resolved", { epic: epicType?.name, story: storyType?.name });
 
+    // Discover the story points custom field dynamically
+    let storyPointsFieldId: string | null = null;
+    const targetTypeId = storyType?.id || epicType?.id;
+    if (targetTypeId) {
+      const fieldsRes = await fetch(`${jiraBaseUrl}/issue/createmeta/${targetTypeId}/fields?projectKeys=${projectKey}`, { headers });
+      if (fieldsRes.ok) {
+        const fieldsData = await fieldsRes.json();
+        const fieldsList = fieldsData.values || fieldsData || [];
+        const spField = fieldsList.find((f: any) =>
+          f.name === 'Story Points' || f.name === 'Story point estimate' || f.key === 'story_points'
+        );
+        if (spField) {
+          storyPointsFieldId = spField.fieldId || spField.key;
+          logStep("Story points field discovered", { fieldId: storyPointsFieldId, name: spField.name });
+        } else {
+          logStep("Story points field not found in project fields");
+        }
+      }
+    }
+
     const results: { id: string; key: string; title: string; type: string }[] = [];
     const epicKeyMap: Record<string, string> = {};
 
@@ -144,7 +164,7 @@ serve(async (req) => {
           description: { type: "doc", version: 1, content: descriptionContent },
           issuetype: { id: storyType.id },
           priority: { name: PRIORITY_MAP[story.priority] || "Medium" },
-          story_points: story.storyPoints,
+          ...(storyPointsFieldId && story.storyPoints ? { [storyPointsFieldId]: story.storyPoints } : {}),
         },
       };
 
