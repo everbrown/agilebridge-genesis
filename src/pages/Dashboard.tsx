@@ -243,6 +243,7 @@ const Dashboard = () => {
                   Generate Backlog
                 </h1>
               </div>
+            </div>
             {items.length > 0 && (
               hasAccess ? (
                 <div className="relative" ref={exportRef}>
