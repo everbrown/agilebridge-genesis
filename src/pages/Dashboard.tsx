@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [milestones, setMilestones] = useState<string[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [jiraModalOpen, setJiraModalOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
