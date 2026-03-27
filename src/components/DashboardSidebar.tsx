@@ -11,7 +11,11 @@ const navItems = [
   { icon: Settings, label: 'Settings', target: 'section-settings' },
 ];
 
-const DashboardSidebar = () => {
+interface DashboardSidebarProps {
+  hasAccess?: boolean;
+}
+
+const DashboardSidebar = ({ hasAccess = false }: DashboardSidebarProps) => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
@@ -92,14 +96,16 @@ const DashboardSidebar = () => {
             <p className="text-xs font-medium text-foreground truncate">{userEmail ?? 'Loading...'}</p>
           </div>
         </div>
-        <button
-          onClick={handleManageSubscription}
-          disabled={portalLoading}
-          className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
-        >
-          <CreditCard className="w-3.5 h-3.5" />
-          {portalLoading ? 'Opening...' : 'Manage Subscription'}
-        </button>
+        {hasAccess && (
+          <button
+            onClick={handleManageSubscription}
+            disabled={portalLoading}
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-foreground hover:bg-muted transition-colors disabled:opacity-50"
+          >
+            <CreditCard className="w-3.5 h-3.5" />
+            {portalLoading ? 'Opening...' : 'Manage Subscription'}
+          </button>
+        )}
         <button
           onClick={handleSignOut}
           className="w-full flex items-center gap-2 px-3 py-2 rounded-sm text-xs text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
