@@ -10,8 +10,10 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const ONEMIN_AI_KEY = Deno.env.get('ONEMIN_AI_KEY');
-  if (!ONEMIN_AI_KEY) {
+  const rawOneMinAiKey = Deno.env.get('ONEMIN_AI_KEY');
+  const oneMinAiKey = rawOneMinAiKey?.trim();
+
+  if (!oneMinAiKey) {
     return new Response(
       JSON.stringify({ error: 'ONEMIN_AI_KEY is not configured' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -30,7 +32,6 @@ serve(async (req) => {
       );
     }
 
-    // Build the request to 1min.AI
     const apiFormData = new FormData();
     apiFormData.append('file', file, file.name);
     apiFormData.append('type', type);
@@ -38,7 +39,9 @@ serve(async (req) => {
     const response = await fetch('https://api.1min.ai/api/features', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${ONEMIN_AI_KEY}`,
+        'Authorization': `Bearer ${oneMinAiKey}`,
+        'API-KEY': oneMinAiKey,
+        'X-API-Key': oneMinAiKey,
       },
       body: apiFormData,
     });
