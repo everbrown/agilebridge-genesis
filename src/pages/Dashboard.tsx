@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
 import BacklogTable from '@/components/BacklogTable';
 import ProgressBar from '@/components/ProgressBar';
@@ -231,14 +232,17 @@ const Dashboard = () => {
       <main id="dashboard-main" className="flex-1 min-w-0">
         <header id="section-dashboard" className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-8 py-3 sm:py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
-            <div>
-              <h2 className="text-sm font-bold tracking-tighter text-foreground lg:hidden mb-0.5">
-                Agile<span className="text-primary">Bridge</span>
-              </h2>
-              <p className="text-xs text-muted-foreground hidden sm:block">Dashboard / Ingest</p>
-              <h1 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
-                Generate Backlog
-              </h1>
+            <div className="flex items-center gap-2">
+              <MobileSidebar />
+              <div>
+                <h2 className="text-sm font-bold tracking-tighter text-foreground lg:hidden mb-0.5">
+                  Agile<span className="text-primary">Bridge</span>
+                </h2>
+                <p className="text-xs text-muted-foreground hidden sm:block">Dashboard / Ingest</p>
+                <h1 className="text-xl font-bold tracking-tight text-foreground mt-0.5">
+                  Generate Backlog
+                </h1>
+              </div>
             </div>
             {items.length > 0 && (
               hasAccess ? (
