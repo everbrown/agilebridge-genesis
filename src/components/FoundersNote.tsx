@@ -38,7 +38,7 @@ const FoundersNote = () => {
               that actually reflect what was planned — not a guessed-at backlog.
             </p>
             <p className="text-foreground font-medium pt-2">
-              If you've ever dreaded opening an .mpp file on a Friday afternoon,
+              If you've ever dreaded opening a legacy project plan on a Friday afternoon,
               this is for you.
             </p>
           </div>
