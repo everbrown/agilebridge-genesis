@@ -25,7 +25,7 @@ import {
 } from '@/lib/mpp-parser';
 
 const LOCAL_ACCESS_KEY = 'ab_checkout_success';
-const LOCAL_ACCESS_TTL_MS = 30 * 60 * 1000;
+const LOCAL_ACCESS_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours — matches shortest tier (Sprint Pass)
 
 const hasRecentLocalAccess = () => {
   if (typeof window === 'undefined') return false;
@@ -112,7 +112,10 @@ const Dashboard = () => {
 
     // Check on URL params (checkout=success)
     const params = new URLSearchParams(window.location.search);
-    if (params.get('checkout') === 'success') {
+    const isCheckoutReturn = params.get('checkout') === 'success';
+
+    if (isCheckoutReturn) {
+      // User just paid — grant immediate access, don't race with API check
       markLocalAccessGranted();
       setHasAccess(true);
       window.history.replaceState({}, '', '/dashboard');
@@ -120,11 +123,15 @@ const Dashboard = () => {
         title: "Payment received!",
         description: "Your full backlog is now unlocked.",
       });
+      // Delay API verification to let Stripe finalize (avoids race condition)
+      const delayedCheck = setTimeout(() => void checkAccess(), 5000);
+      return () => clearTimeout(delayedCheck);
     }
 
+    // Normal page load — verify access immediately
     void checkAccess();
 
-    // Re-check on focus (user returns from checkout)
+    // Re-check on focus (user returns from checkout in another tab)
     const handleFocus = () => {
       void checkAccess();
     };
@@ -134,10 +141,14 @@ const Dashboard = () => {
       }
     };
 
+    // Periodic re-check every 60s to pick up Stripe confirmation
+    const interval = setInterval(() => void checkAccess(), 60_000);
+
     window.addEventListener('focus', handleFocus);
     window.addEventListener('storage', handleStorage);
 
     return () => {
+      clearInterval(interval);
       window.removeEventListener('focus', handleFocus);
       window.removeEventListener('storage', handleStorage);
     };
