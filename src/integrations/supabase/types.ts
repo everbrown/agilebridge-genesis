@@ -17,18 +17,21 @@ export type Database = {
       profiles: {
         Row: {
           created_at: string
+          email: string | null
           id: string
           marketing_opt_in: boolean
           updated_at: string
         }
         Insert: {
           created_at?: string
+          email?: string | null
           id: string
           marketing_opt_in?: boolean
           updated_at?: string
         }
         Update: {
           created_at?: string
+          email?: string | null
           id?: string
           marketing_opt_in?: boolean
           updated_at?: string
