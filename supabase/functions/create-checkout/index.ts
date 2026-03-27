@@ -52,6 +52,7 @@ serve(async (req) => {
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
+      customer_creation: !customerId && checkoutMode === "payment" ? "always" : undefined,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: checkoutMode,
       success_url: `${req.headers.get("origin")}/dashboard?checkout=success`,

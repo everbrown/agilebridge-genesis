@@ -45,6 +45,32 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
+      logStep("No customer found, checking recent guest checkout sessions");
+
+      const recentSessions = await stripe.checkout.sessions.list({ limit: 25 });
+      const guestPayment = recentSessions.data.find((session) => {
+        const sessionEmail = (session.customer_details?.email || (session as any).customer_email || "").toLowerCase();
+        return session.mode === "payment" && session.payment_status === "paid" && sessionEmail === user.email.toLowerCase();
+      });
+
+      if (guestPayment) {
+        const purchasedAt = new Date((guestPayment as any).created * 1000);
+        const expiresAt = new Date(purchasedAt.getTime() + 24 * 60 * 60 * 1000);
+
+        if (new Date() < expiresAt) {
+          logStep("Guest Sprint Pass active", { purchasedAt: purchasedAt.toISOString(), expiresAt: expiresAt.toISOString() });
+          return new Response(JSON.stringify({
+            subscribed: false,
+            hasAccess: true,
+            payment_type: "one_time",
+            expires_at: expiresAt.toISOString(),
+          }), {
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+            status: 200,
+          });
+        }
+      }
+
       logStep("No customer found");
       return new Response(JSON.stringify({ subscribed: false, hasAccess: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

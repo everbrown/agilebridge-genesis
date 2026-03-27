@@ -23,6 +23,34 @@ import {
   exportToJiraCSV,
 } from '@/lib/mpp-parser';
 
+const LOCAL_ACCESS_KEY = 'ab_checkout_success';
+const LOCAL_ACCESS_TTL_MS = 30 * 60 * 1000;
+
+const hasRecentLocalAccess = () => {
+  if (typeof window === 'undefined') return false;
+
+  const stored = window.localStorage.getItem(LOCAL_ACCESS_KEY);
+  if (!stored) return false;
+
+  const timestamp = Number(stored);
+  if (!Number.isFinite(timestamp)) {
+    window.localStorage.removeItem(LOCAL_ACCESS_KEY);
+    return false;
+  }
+
+  if (Date.now() - timestamp > LOCAL_ACCESS_TTL_MS) {
+    window.localStorage.removeItem(LOCAL_ACCESS_KEY);
+    return false;
+  }
+
+  return true;
+};
+
+const markLocalAccessGranted = () => {
+  if (typeof window === 'undefined') return;
+  window.localStorage.setItem(LOCAL_ACCESS_KEY, String(Date.now()));
+};
+
 const Dashboard = () => {
   const [file, setFile] = useState<File | null>(null);
   const [items, setItems] = useState<AgileItem[]>([]);
@@ -45,16 +73,23 @@ const Dashboard = () => {
         setHasAccess(false);
         return;
       }
+
       setUserEmail(session.user?.email ?? null);
       setCheckingAccess(true);
+
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (!error && data?.hasAccess) {
+        markLocalAccessGranted();
+        setHasAccess(true);
+      } else if (hasRecentLocalAccess()) {
         setHasAccess(true);
       } else {
         setHasAccess(false);
       }
     } catch {
-      setHasAccess(false);
+      if (!hasRecentLocalAccess()) {
+        setHasAccess(false);
+      }
     } finally {
       setCheckingAccess(false);
     }
@@ -74,25 +109,37 @@ const Dashboard = () => {
       if (savedMilestones) setMilestones(JSON.parse(savedMilestones));
     } catch { /* ignore */ }
 
-    checkAccess();
-
-    // Re-check on focus (user returns from checkout)
-    const handleFocus = () => checkAccess();
-    window.addEventListener('focus', handleFocus);
-
     // Check on URL params (checkout=success)
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
-      window.history.replaceState({}, '', '/dashboard');
-      // Optimistically grant access immediately so user sees stories right away
+      markLocalAccessGranted();
       setHasAccess(true);
+      window.history.replaceState({}, '', '/dashboard');
       toast({
         title: "Payment received!",
         description: "Your full backlog is now unlocked.",
       });
     }
 
-    return () => window.removeEventListener('focus', handleFocus);
+    void checkAccess();
+
+    // Re-check on focus (user returns from checkout)
+    const handleFocus = () => {
+      void checkAccess();
+    };
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key === LOCAL_ACCESS_KEY && hasRecentLocalAccess()) {
+        setHasAccess(true);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, [checkAccess]);
 
   // Close export dropdown on outside click
