@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload } from 'lucide-react';
+import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
@@ -10,6 +10,7 @@ import JiraSyncModal from '@/components/JiraSyncModal';
 import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
 import { parseDocumentWithAI, aiResponseToRawTasks } from '@/lib/parse-document-ai';
+import { exportToJSON, exportToMarkdown, copyToClipboardTable, downloadFile } from '@/lib/export-utils';
 import { toast } from '@/hooks/use-toast';
 import {
   AgileItem,
@@ -276,16 +277,29 @@ const Dashboard = () => {
     } catch { /* quota exceeded — ignore */ }
   }, [file]);
 
-  const handleExport = useCallback(() => {
+  const handleExportCSV = useCallback(() => {
     if (items.length === 0 || !hasAccess) return;
     const csv = exportToJiraCSV(items);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'agilebridge-backlog.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(csv, 'agilebridge-backlog.csv', 'text/csv');
+  }, [items, hasAccess]);
+
+  const handleExportJSON = useCallback(() => {
+    if (items.length === 0 || !hasAccess) return;
+    const json = exportToJSON(items);
+    downloadFile(json, 'agilebridge-backlog.json', 'application/json');
+  }, [items, hasAccess]);
+
+  const handleExportMarkdown = useCallback(() => {
+    if (items.length === 0 || !hasAccess) return;
+    const md = exportToMarkdown(items);
+    downloadFile(md, 'agilebridge-backlog.md', 'text/markdown');
+  }, [items, hasAccess]);
+
+  const handleCopyToClipboard = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    const table = copyToClipboardTable(items);
+    await navigator.clipboard.writeText(table);
+    toast({ title: 'Copied to clipboard', description: 'Paste into Google Sheets, Notion, or any spreadsheet app.' });
   }, [items, hasAccess]);
 
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
@@ -328,13 +342,34 @@ const Dashboard = () => {
                     <ChevronDown className="w-3 h-3" />
                   </button>
                   {exportMenuOpen && (
-                    <div className="absolute right-0 mt-1 w-52 bg-card border border-border rounded-sm shadow-lg z-30">
+                    <div className="absolute right-0 mt-1 w-56 bg-card border border-border rounded-sm shadow-lg z-30">
                       <button
-                        onClick={() => { handleExport(); setExportMenuOpen(false); }}
+                        onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left"
                       >
-                        <Download className="w-4 h-4 text-muted-foreground" />
-                        Download Jira CSV
+                        <FileDown className="w-4 h-4 text-muted-foreground" />
+                        Download CSV (Jira / Sheets)
+                      </button>
+                      <button
+                        onClick={() => { handleExportJSON(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <FileJson className="w-4 h-4 text-muted-foreground" />
+                        Download JSON
+                      </button>
+                      <button
+                        onClick={() => { handleExportMarkdown(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <FileText className="w-4 h-4 text-muted-foreground" />
+                        Download Markdown
+                      </button>
+                      <button
+                        onClick={() => { handleCopyToClipboard(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <Clipboard className="w-4 h-4 text-muted-foreground" />
+                        Copy to Clipboard
                       </button>
                       <button
                         onClick={() => { setJiraModalOpen(true); setExportMenuOpen(false); }}
