@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload } from 'lucide-react';
+import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
@@ -276,16 +276,29 @@ const Dashboard = () => {
     } catch { /* quota exceeded — ignore */ }
   }, [file]);
 
-  const handleExport = useCallback(() => {
+  const handleExportCSV = useCallback(() => {
     if (items.length === 0 || !hasAccess) return;
     const csv = exportToJiraCSV(items);
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'agilebridge-backlog.csv';
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadFile(csv, 'agilebridge-backlog.csv', 'text/csv');
+  }, [items, hasAccess]);
+
+  const handleExportJSON = useCallback(() => {
+    if (items.length === 0 || !hasAccess) return;
+    const json = exportToJSON(items);
+    downloadFile(json, 'agilebridge-backlog.json', 'application/json');
+  }, [items, hasAccess]);
+
+  const handleExportMarkdown = useCallback(() => {
+    if (items.length === 0 || !hasAccess) return;
+    const md = exportToMarkdown(items);
+    downloadFile(md, 'agilebridge-backlog.md', 'text/markdown');
+  }, [items, hasAccess]);
+
+  const handleCopyToClipboard = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    const table = copyToClipboardTable(items);
+    await navigator.clipboard.writeText(table);
+    toast({ title: 'Copied to clipboard', description: 'Paste into Google Sheets, Notion, or any spreadsheet app.' });
   }, [items, hasAccess]);
 
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
