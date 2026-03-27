@@ -5,16 +5,17 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 
 const navItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: true },
-  { icon: Upload, label: 'Ingest' },
-  { icon: FileStack, label: 'Projects' },
-  { icon: Settings, label: 'Settings' },
+  { icon: LayoutDashboard, label: 'Dashboard', target: 'section-dashboard' },
+  { icon: Upload, label: 'Ingest', target: 'section-ingest' },
+  { icon: FileStack, label: 'Projects', target: 'section-projects' },
+  { icon: Settings, label: 'Settings', target: 'section-settings' },
 ];
 
 const DashboardSidebar = () => {
   const navigate = useNavigate();
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
+  const [activeNav, setActiveNav] = useState('Dashboard');
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -63,11 +64,15 @@ const DashboardSidebar = () => {
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {navItems.map(({ icon: Icon, label, active }) => (
+        {navItems.map(({ icon: Icon, label, target }) => (
           <button
             key={label}
+            onClick={() => {
+              setActiveNav(label);
+              document.getElementById(target)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-sm text-sm font-medium transition-colors ${
-              active
+              activeNav === label
                 ? 'bg-sidebar-accent text-sidebar-accent-foreground'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
             }`}

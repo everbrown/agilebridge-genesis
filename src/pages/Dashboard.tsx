@@ -284,6 +284,7 @@ const Dashboard = () => {
         </header>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
+          <div id="section-ingest" />
           <IngestZone
             onFileAccepted={handleFileAccepted}
             acceptedFile={file}
@@ -375,6 +376,7 @@ const Dashboard = () => {
                   : `Showing ${FREE_STORY_LIMIT} of ${items.length} stories for free. Unlock the full backlog below.`}
               </p>
 
+              <div id="section-projects" />
               <BacklogTable items={visibleItems} />
 
               {isLocked && <PaywallOverlay itemCount={items.length} />}
