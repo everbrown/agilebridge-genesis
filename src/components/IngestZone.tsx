@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { Upload, FileText, X } from 'lucide-react';
+import { toast } from '@/hooks/use-toast';
 
 interface IngestZoneProps {
   onFileAccepted: (file: File) => void;
@@ -8,22 +9,31 @@ interface IngestZoneProps {
   onClear: () => void;
 }
 
-const ACCEPTED_TYPES = ['.mpp', '.pdf', '.docx', '.csv'];
+const ACCEPTED_TYPES = ['.mpp', '.pdf', '.docx', '.csv', '.txt', '.md'];
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 
 const IngestZone = ({ onFileAccepted, acceptedFile, onClear }: IngestZoneProps) => {
   const [isDragging, setIsDragging] = useState(false);
+
+  const validateAndAccept = useCallback((file: File) => {
+    if (file.size > MAX_FILE_SIZE) {
+      toast({ title: 'File too large', description: `Maximum file size is 20 MB. Your file is ${(file.size / 1024 / 1024).toFixed(1)} MB.`, variant: 'destructive' });
+      return;
+    }
+    onFileAccepted(file);
+  }, [onFileAccepted]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
     const file = e.dataTransfer.files[0];
-    if (file) onFileAccepted(file);
-  }, [onFileAccepted]);
+    if (file) validateAndAccept(file);
+  }, [validateAndAccept]);
 
   const handleFileInput = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) onFileAccepted(file);
-  }, [onFileAccepted]);
+    if (file) validateAndAccept(file);
+  }, [validateAndAccept]);
 
   if (acceptedFile) {
     return (

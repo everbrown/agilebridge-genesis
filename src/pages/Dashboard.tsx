@@ -32,6 +32,7 @@ const Dashboard = () => {
   const [milestones, setMilestones] = useState<string[]>([]);
   const [hasAccess, setHasAccess] = useState(false);
   const [checkingAccess, setCheckingAccess] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [jiraModalOpen, setJiraModalOpen] = useState(false);
   const [exportMenuOpen, setExportMenuOpen] = useState(false);
   const exportRef = useRef<HTMLDivElement>(null);
@@ -44,6 +45,7 @@ const Dashboard = () => {
         setHasAccess(false);
         return;
       }
+      setUserEmail(session.user?.email ?? null);
       setCheckingAccess(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (!error && data?.hasAccess) {
@@ -226,14 +228,14 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <div className="hidden lg:block">
-        <DashboardSidebar />
+        <DashboardSidebar hasAccess={hasAccess} />
       </div>
 
       <main id="dashboard-main" className="flex-1 min-w-0">
         <header id="section-dashboard" className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-8 py-3 sm:py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <MobileSidebar />
+              <MobileSidebar hasAccess={hasAccess} />
               <div>
                 <h2 className="text-sm font-bold tracking-tighter text-foreground lg:hidden mb-0.5">
                   Agile<span className="text-primary">Bridge</span>
@@ -386,10 +388,52 @@ const Dashboard = () => {
               {isLocked && <PaywallOverlay itemCount={items.length} />}
             </>
           )}
-          <div id="section-settings" className="pt-6">
-            <div className="surface-elevated rounded-sm p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-1">Settings</h3>
-              <p className="text-xs text-muted-foreground">Account settings and preferences coming soon.</p>
+          <div id="section-settings" className="pt-6 space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Settings</h3>
+
+            {/* Account Info */}
+            <div className="surface-elevated rounded-sm p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-sm bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                  {userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : '??'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground truncate">{userEmail ?? 'Loading...'}</p>
+                  <p className="text-xs text-muted-foreground">Signed in via Google</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Subscription Status */}
+            <div className="surface-elevated rounded-sm p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subscription</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {hasAccess ? 'Active' : 'Free Tier'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {hasAccess
+                      ? 'You have full access to all features.'
+                      : `You can preview up to ${FREE_STORY_LIMIT} stories for free.`}
+                  </p>
+                </div>
+                {hasAccess ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-primary/10 text-primary text-xs font-medium">Active</span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-muted text-muted-foreground text-xs font-medium">Free</span>
+                )}
+              </div>
+            </div>
+
+            {/* Support */}
+            <div className="surface-elevated rounded-sm p-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support</p>
+              <p className="text-xs text-muted-foreground">
+                Need help? Reach us at{' '}
+                <a href="mailto:support@agilebridge.ai" className="text-primary hover:underline">support@agilebridge.ai</a>
+              </p>
             </div>
           </div>
         </div>

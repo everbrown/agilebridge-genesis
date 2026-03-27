@@ -4,7 +4,11 @@ import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import { VisuallyHidden } from '@radix-ui/react-visually-hidden';
 
-const MobileSidebar = () => {
+interface MobileSidebarProps {
+  hasAccess?: boolean;
+}
+
+const MobileSidebar = ({ hasAccess = false }: MobileSidebarProps) => {
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,7 +27,7 @@ const MobileSidebar = () => {
             <SheetTitle>Navigation</SheetTitle>
           </VisuallyHidden>
           <div onClick={() => setOpen(false)}>
-            <DashboardSidebar />
+            <DashboardSidebar hasAccess={hasAccess} />
           </div>
         </SheetContent>
       </Sheet>
