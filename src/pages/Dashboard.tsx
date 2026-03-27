@@ -386,10 +386,52 @@ const Dashboard = () => {
               {isLocked && <PaywallOverlay itemCount={items.length} />}
             </>
           )}
-          <div id="section-settings" className="pt-6">
-            <div className="surface-elevated rounded-sm p-6">
-              <h3 className="text-sm font-semibold text-foreground mb-1">Settings</h3>
-              <p className="text-xs text-muted-foreground">Account settings and preferences coming soon.</p>
+          <div id="section-settings" className="pt-6 space-y-4">
+            <h3 className="text-sm font-semibold text-foreground">Settings</h3>
+
+            {/* Account Info */}
+            <div className="surface-elevated rounded-sm p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Account</p>
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-sm bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+                  {userEmail ? userEmail.split('@')[0].slice(0, 2).toUpperCase() : '??'}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium text-foreground truncate">{userEmail ?? 'Loading...'}</p>
+                  <p className="text-xs text-muted-foreground">Signed in via Google</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Subscription Status */}
+            <div className="surface-elevated rounded-sm p-5 space-y-3">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Subscription</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {hasAccess ? 'Active' : 'Free Tier'}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {hasAccess
+                      ? 'You have full access to all features.'
+                      : `You can preview up to ${FREE_STORY_LIMIT} stories for free.`}
+                  </p>
+                </div>
+                {hasAccess ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-primary/10 text-primary text-xs font-medium">Active</span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-sm bg-muted text-muted-foreground text-xs font-medium">Free</span>
+                )}
+              </div>
+            </div>
+
+            {/* Support */}
+            <div className="surface-elevated rounded-sm p-5 space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Support</p>
+              <p className="text-xs text-muted-foreground">
+                Need help? Reach us at{' '}
+                <a href="mailto:support@agilebridge.ai" className="text-primary hover:underline">support@agilebridge.ai</a>
+              </p>
             </div>
           </div>
         </div>
