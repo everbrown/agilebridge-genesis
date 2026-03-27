@@ -67,13 +67,28 @@ const Dashboard = () => {
     const handleFocus = () => checkAccess();
     window.addEventListener('focus', handleFocus);
 
-    // Check on URL params (checkout=success)
+    // Check on URL params (checkout=success) with retries
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
-      // Small delay to let Stripe process
-      setTimeout(checkAccess, 2000);
-      // Clean URL
       window.history.replaceState({}, '', '/dashboard');
+      toast({
+        title: "Payment received!",
+        description: "Verifying your access — this may take a moment...",
+      });
+      // Retry check several times with increasing delays to allow Stripe to process
+      const retryDelays = [2000, 4000, 8000, 15000];
+      for (const delay of retryDelays) {
+        await new Promise(r => setTimeout(r, delay));
+        const { data } = await supabase.functions.invoke('check-subscription');
+        if (data?.hasAccess) {
+          setHasAccess(true);
+          toast({
+            title: "Access unlocked!",
+            description: "Your full backlog is now visible.",
+          });
+          break;
+        }
+      }
     }
 
     return () => window.removeEventListener('focus', handleFocus);
