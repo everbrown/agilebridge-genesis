@@ -228,8 +228,8 @@ const Dashboard = () => {
         <DashboardSidebar />
       </div>
 
-      <main className="flex-1 min-w-0">
-        <header className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-8 py-3 sm:py-4">
+      <main id="dashboard-main" className="flex-1 min-w-0">
+        <header id="section-dashboard" className="sticky top-0 z-20 border-b border-border bg-background/80 backdrop-blur-md px-4 sm:px-8 py-3 sm:py-4">
           <div className="max-w-5xl mx-auto flex items-center justify-between gap-2">
             <div>
               <h2 className="text-sm font-bold tracking-tighter text-foreground lg:hidden mb-0.5">
@@ -284,6 +284,7 @@ const Dashboard = () => {
         </header>
 
         <div className="max-w-5xl mx-auto px-4 sm:px-8 py-4 sm:py-8 space-y-4 sm:space-y-6">
+          <div id="section-ingest" />
           <IngestZone
             onFileAccepted={handleFileAccepted}
             acceptedFile={file}
@@ -375,11 +376,18 @@ const Dashboard = () => {
                   : `Showing ${FREE_STORY_LIMIT} of ${items.length} stories for free. Unlock the full backlog below.`}
               </p>
 
+              <div id="section-projects" />
               <BacklogTable items={visibleItems} />
 
               {isLocked && <PaywallOverlay itemCount={items.length} />}
             </>
           )}
+          <div id="section-settings" className="pt-6">
+            <div className="surface-elevated rounded-sm p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-1">Settings</h3>
+              <p className="text-xs text-muted-foreground">Account settings and preferences coming soon.</p>
+            </div>
+          </div>
         </div>
       </main>
       <JiraSyncModal open={jiraModalOpen} onClose={() => setJiraModalOpen(false)} items={items} />
