@@ -80,30 +80,16 @@ const Dashboard = () => {
     const handleFocus = () => checkAccess();
     window.addEventListener('focus', handleFocus);
 
-    // Check on URL params (checkout=success) with retries
+    // Check on URL params (checkout=success)
     const params = new URLSearchParams(window.location.search);
     if (params.get('checkout') === 'success') {
       window.history.replaceState({}, '', '/dashboard');
+      // Optimistically grant access immediately so user sees stories right away
+      setHasAccess(true);
       toast({
         title: "Payment received!",
-        description: "Verifying your access — this may take a moment...",
+        description: "Your full backlog is now unlocked.",
       });
-      const retryCheckAccess = async () => {
-        const retryDelays = [2000, 4000, 8000, 15000];
-        for (const delay of retryDelays) {
-          await new Promise(r => setTimeout(r, delay));
-          const { data } = await supabase.functions.invoke('check-subscription');
-          if (data?.hasAccess) {
-            setHasAccess(true);
-            toast({
-              title: "Access unlocked!",
-              description: "Your full backlog is now visible.",
-            });
-            return;
-          }
-        }
-      };
-      retryCheckAccess();
     }
 
     return () => window.removeEventListener('focus', handleFocus);
