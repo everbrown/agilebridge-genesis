@@ -61,6 +61,19 @@ const Dashboard = () => {
   }, []);
 
   useEffect(() => {
+    // Restore persisted stories from sessionStorage (survives checkout redirect)
+    try {
+      const savedItems = sessionStorage.getItem('ab_items');
+      const savedDocType = sessionStorage.getItem('ab_docType');
+      const savedMilestones = sessionStorage.getItem('ab_milestones');
+      if (savedItems) {
+        setItems(JSON.parse(savedItems));
+        setProgress(100);
+      }
+      if (savedDocType) setDocType(savedDocType as DocumentType);
+      if (savedMilestones) setMilestones(JSON.parse(savedMilestones));
+    } catch { /* ignore */ }
+
     checkAccess();
 
     // Re-check on focus (user returns from checkout)
@@ -221,6 +234,13 @@ const Dashboard = () => {
     setMilestones(detectedMilestones);
     setItems(parsedItems);
     setIsProcessing(false);
+
+    // Persist to sessionStorage so data survives checkout redirect
+    try {
+      sessionStorage.setItem('ab_items', JSON.stringify(parsedItems));
+      sessionStorage.setItem('ab_docType', detectedType || '');
+      sessionStorage.setItem('ab_milestones', JSON.stringify(detectedMilestones));
+    } catch { /* quota exceeded — ignore */ }
   }, [file]);
 
   const handleExport = useCallback(() => {
