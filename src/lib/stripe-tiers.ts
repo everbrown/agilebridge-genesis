@@ -5,7 +5,7 @@ export const TIERS = {
     product_id: "prod_U9m8PXKeBfBZ3y",
     price: 19,
     mode: "payment" as const,
-    description: "24-hour full access. Convert up to 3 large documents (.mpp, .csv, or PDF) into backlogs.",
+    description: "24-hour full access. Convert up to 3 large documents (PDF, DOCX, or CSV) into backlogs.",
   },
   professional: {
     name: "Professional",

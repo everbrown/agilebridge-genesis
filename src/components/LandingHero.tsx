@@ -46,9 +46,9 @@ const LandingHero = () => {
           transition={{ ...transition, delay: 0.3 }}
           className="text-sm sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6 sm:mb-10 leading-relaxed"
         >
-          You inherited a 300-task .mpp file and a deadline. Now you're spending the weekend
+          You inherited a 300-task project plan and a deadline. Now you're spending the weekend
           flattening phases into tickets, losing every parent-child relationship along the way.
-          Drop the file here — we'll turn it into INVEST-ready stories in Jira, Azure DevOps, ClickUp, or wherever your team works.
+          Drop your PDF, DOCX, or CSV here — we'll turn it into INVEST-ready stories in Jira, Azure DevOps, ClickUp, or wherever your team works.
         </motion.p>
 
         <motion.div

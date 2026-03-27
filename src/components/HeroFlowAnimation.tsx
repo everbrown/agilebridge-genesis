@@ -25,7 +25,7 @@ const MessyFile = () => (
       >
         <div className="flex items-center gap-2 mb-3">
           <FileSpreadsheet className="w-4 h-4 text-destructive" />
-          <span className="text-xs font-semibold text-foreground tracking-tight">legacy_plan_v3_FINAL.mpp</span>
+          <span className="text-xs font-semibold text-foreground tracking-tight">legacy_plan_v3_FINAL.pdf</span>
         </div>
         {/* Messy rows */}
         <div className="space-y-1.5">
@@ -234,7 +234,7 @@ const HeroFlowAnimation = () => {
     <div className="w-full max-w-xl mx-auto mt-8 sm:mt-12">
       {/* Step indicators */}
       <div className="flex items-center justify-center gap-1 sm:gap-2 mb-4 sm:mb-6">
-        {['Upload .mpp', 'Generate Stories', 'Populate Board'].map((label, i) => (
+        {['Upload File', 'Generate Stories', 'Populate Board'].map((label, i) => (
           <div key={i} className="flex items-center gap-1 sm:gap-2">
             <button
               onClick={() => setActiveStep(i)}
