@@ -9,38 +9,82 @@ export interface ParseDocumentResponse {
 }
 
 /**
- * Sends a file to the 1min.AI parse-document edge function
+ * Extracts text from a PDF file client-side using pdfjs-dist.
+ */
+const extractPdfText = async (file: File): Promise<string> => {
+  const pdfjsLib = await import('pdfjs-dist');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
+
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  const pages: string[] = [];
+
+  for (let i = 1; i <= Math.min(pdf.numPages, 50); i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const text = content.items
+      .map((item: any) => item.str)
+      .join(' ');
+    pages.push(text);
+  }
+
+  return pages.join('\n\n');
+};
+
+/**
+ * Extracts text from a DOCX file client-side using mammoth.
+ */
+const extractDocxText = async (file: File): Promise<string> => {
+  const mammoth = await import('mammoth');
+  const arrayBuffer = await file.arrayBuffer();
+  const result = await mammoth.extractRawText({ arrayBuffer });
+  return result.value;
+};
+
+/**
+ * Extracts text from a file based on its extension.
+ * Returns the text content for AI processing.
+ */
+export const extractTextFromFile = async (file: File): Promise<string> => {
+  const ext = file.name.split('.').pop()?.toLowerCase();
+
+  switch (ext) {
+    case 'pdf':
+      return extractPdfText(file);
+    case 'docx':
+      return extractDocxText(file);
+    case 'csv':
+    case 'txt':
+    case 'md':
+      return file.text();
+    default:
+      // Try reading as text; will throw for true binary files
+      return file.text();
+  }
+};
+
+/**
+ * Sends extracted text to the Lovable AI–powered parse-document edge function
  * and returns the structured JSON response.
  */
 export const parseDocumentWithAI = async (file: File): Promise<ParseDocumentResponse> => {
-  const formData = new FormData();
-  formData.append('file', file, file.name);
-  formData.append('type', 'parse-document');
+  // Step 1: Extract text client-side
+  const text = await extractTextFromFile(file);
 
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-  const { data: { session } } = await supabase.auth.getSession();
-  const token = session?.access_token || anonKey;
-
-  const res = await fetch(
-    `https://${projectId}.supabase.co/functions/v1/parse-document`,
-    {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'apikey': anonKey,
-      },
-      body: formData,
-    }
-  );
-
-  if (!res.ok) {
-    const err = await res.json().catch(() => ({ error: 'Unknown error' }));
-    throw new Error(err.error || `Parse failed (${res.status})`);
+  if (!text || text.trim().length < 10) {
+    throw new Error('Could not extract readable text from this file. Try a different format.');
   }
 
-  return res.json();
+  // Step 2: Send text to edge function for AI structuring
+  const { data, error } = await supabase.functions.invoke('parse-document', {
+    body: { text, filename: file.name },
+  });
+
+  if (error) {
+    throw new Error(error.message || 'AI parsing failed');
+  }
+
+  return data as ParseDocumentResponse;
 };
 
 /**
@@ -50,17 +94,19 @@ export const parseDocumentWithAI = async (file: File): Promise<ParseDocumentResp
 export const aiResponseToRawTasks = (response: ParseDocumentResponse): RawTask[] => {
   // If the API returned structured tasks directly
   if (response.tasks && Array.isArray(response.tasks)) {
-    return response.tasks;
+    return response.tasks.map(t => ({
+      ...t,
+      percentComplete: t.percentComplete ?? 0,
+    }));
   }
 
   // If the API returned text content, parse it into tasks
-  const content = response.content || response.text || response.result || '';
+  const content = response.content || '';
   if (typeof content !== 'string' || content.length < 10) {
     return [];
   }
 
-  // Parse text content into requirement lines
-  const lines = (content as string)
+  const lines = content
     .split('\n')
     .map(l => l.trim())
     .filter(l => l.length > 5);
