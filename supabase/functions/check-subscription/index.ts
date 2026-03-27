@@ -47,7 +47,57 @@ serve(async (req) => {
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No Stripe customer found for this email");
+      logStep("No customer found, checking recent checkout sessions by email");
+
+      // Fallback: search for completed checkout sessions by email
+      // This handles the edge case where Stripe customer search has a brief delay
+      const recentSessions = await stripe.checkout.sessions.list({ limit: 20 });
+      const matchingSession = recentSessions.data.find(
+        s => s.customer_email === user.email && s.payment_status === "paid"
+      );
+
+      if (matchingSession) {
+        logStep("Found paid session via email fallback", { sessionId: matchingSession.id, mode: matchingSession.mode });
+
+        if (matchingSession.mode === "subscription") {
+          // Re-fetch the customer that was created during checkout
+          const customerId = matchingSession.customer as string;
+          if (customerId) {
+            const subs = await stripe.subscriptions.list({ customer: customerId, status: "active", limit: 1 });
+            if (subs.data.length > 0) {
+              const sub = subs.data[0];
+              const productId = sub.items.data[0].price.product;
+              return new Response(JSON.stringify({
+                subscribed: true,
+                hasAccess: true,
+                product_id: productId,
+                subscription_end: new Date(sub.current_period_end * 1000).toISOString(),
+              }), {
+                headers: { ...corsHeaders, "Content-Type": "application/json" },
+                status: 200,
+              });
+            }
+          }
+        }
+
+        if (matchingSession.mode === "payment") {
+          const purchasedAt = new Date((matchingSession as any).created * 1000);
+          const expiresAt = new Date(purchasedAt.getTime() + SPRINT_PASS_HOURS * 60 * 60 * 1000);
+          if (new Date() < expiresAt) {
+            return new Response(JSON.stringify({
+              subscribed: false,
+              hasAccess: true,
+              payment_type: "one_time",
+              expires_at: expiresAt.toISOString(),
+            }), {
+              headers: { ...corsHeaders, "Content-Type": "application/json" },
+              status: 200,
+            });
+          }
+        }
+      }
+
+      logStep("No paid sessions found for this email");
       return new Response(JSON.stringify({ subscribed: false, hasAccess: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
