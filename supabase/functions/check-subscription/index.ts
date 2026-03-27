@@ -12,6 +12,8 @@ const logStep = (step: string, details?: any) => {
   console.log(`[CHECK-SUBSCRIPTION] ${step}${detailsStr}`);
 };
 
+const SPRINT_PASS_HOURS = 24;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -41,37 +43,11 @@ serve(async (req) => {
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
-    // Check for any completed checkout sessions (covers one-time payments)
+    // Look up customer by email
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
 
     if (customers.data.length === 0) {
-      logStep("No customer found, checking recent guest checkout sessions");
-
-      const recentSessions = await stripe.checkout.sessions.list({ limit: 25 });
-      const guestPayment = recentSessions.data.find((session) => {
-        const sessionEmail = (session.customer_details?.email || (session as any).customer_email || "").toLowerCase();
-        return session.mode === "payment" && session.payment_status === "paid" && sessionEmail === user.email.toLowerCase();
-      });
-
-      if (guestPayment) {
-        const purchasedAt = new Date((guestPayment as any).created * 1000);
-        const expiresAt = new Date(purchasedAt.getTime() + 24 * 60 * 60 * 1000);
-
-        if (new Date() < expiresAt) {
-          logStep("Guest Sprint Pass active", { purchasedAt: purchasedAt.toISOString(), expiresAt: expiresAt.toISOString() });
-          return new Response(JSON.stringify({
-            subscribed: false,
-            hasAccess: true,
-            payment_type: "one_time",
-            expires_at: expiresAt.toISOString(),
-          }), {
-            headers: { ...corsHeaders, "Content-Type": "application/json" },
-            status: 200,
-          });
-        }
-      }
-
-      logStep("No customer found");
+      logStep("No Stripe customer found for this email");
       return new Response(JSON.stringify({ subscribed: false, hasAccess: false }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
@@ -81,7 +57,7 @@ serve(async (req) => {
     const customerId = customers.data[0].id;
     logStep("Found customer", { customerId });
 
-    // Check active subscriptions
+    // 1. Check active subscriptions first
     const subscriptions = await stripe.subscriptions.list({
       customer: customerId,
       status: "active",
@@ -103,13 +79,13 @@ serve(async (req) => {
       });
     }
 
-    // Check for completed one-time payment sessions
+    // 2. Check for completed one-time payment (Sprint Pass)
     const sessions = await stripe.checkout.sessions.list({
       customer: customerId,
       limit: 10,
     });
 
-    const SPRINT_PASS_HOURS = 24;
+    // Find the most recent paid one-time payment
     const completedPayment = sessions.data.find(
       s => s.mode === "payment" && s.payment_status === "paid"
     );
@@ -131,7 +107,7 @@ serve(async (req) => {
           status: 200,
         });
       } else {
-        logStep("Sprint Pass expired", { purchasedAt: purchasedAt.toISOString(), expiresAt: expiresAt.toISOString() });
+        logStep("Sprint Pass expired", { expiresAt: expiresAt.toISOString() });
       }
     }
 

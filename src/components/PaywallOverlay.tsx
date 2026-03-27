@@ -39,7 +39,8 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
 
       if (error) throw error;
       if (data?.url) {
-        window.open(data.url, '_blank');
+        // Same-tab redirect — sessionStorage persists stories across the redirect
+        window.location.href = data.url;
       } else {
         throw new Error('No checkout URL returned. Please try again.');
       }
@@ -74,7 +75,7 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
               {itemCount - 3} more stories generated
             </h3>
             <p className="text-sm text-muted-foreground mt-1 max-w-md">
-              Your full backlog is ready! Unlock all stories and CSV export with a Sprint Pass — just ${TIERS.sprint_pass.price}.
+              Your full backlog is ready! Unlock all stories and exports with a Sprint Pass — just ${TIERS.sprint_pass.price}.
             </p>
           </div>
           <button
@@ -83,7 +84,7 @@ const PaywallOverlay = ({ itemCount }: PaywallOverlayProps) => {
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-medium px-6 py-2.5 rounded-sm text-sm transition-all hover:opacity-90 active:scale-95 disabled:opacity-50"
           >
             <CreditCard className="w-4 h-4" />
-            {loading === 'sprint_pass' ? 'Opening checkout...' : `Unlock Full Backlog — $${TIERS.sprint_pass.price}`}
+            {loading === 'sprint_pass' ? 'Redirecting to checkout...' : `Unlock Full Backlog — $${TIERS.sprint_pass.price}`}
           </button>
           <p className="text-xs text-muted-foreground">
             One-time payment · 24-hour full access · Up to 3 documents
