@@ -135,7 +135,7 @@ const Dashboard = () => {
       detectedMilestones = result.milestones;
       parsedItems = result.items;
     } else {
-      // For MPP, PDF, DOCX — use 1min.AI to extract real content
+      // For PDF, DOCX, MPP — extract text client-side, then use Lovable AI to structure
       detectedType = classifyDocument(file.name);
       try {
         const aiResponse = await parseDocumentWithAI(file);
