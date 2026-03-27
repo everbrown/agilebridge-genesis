@@ -382,6 +382,12 @@ const Dashboard = () => {
               {isLocked && <PaywallOverlay itemCount={items.length} />}
             </>
           )}
+          <div id="section-settings" className="pt-6">
+            <div className="surface-elevated rounded-sm p-6">
+              <h3 className="text-sm font-semibold text-foreground mb-1">Settings</h3>
+              <p className="text-xs text-muted-foreground">Account settings and preferences coming soon.</p>
+            </div>
+          </div>
         </div>
       </main>
       <JiraSyncModal open={jiraModalOpen} onClose={() => setJiraModalOpen(false)} items={items} />
