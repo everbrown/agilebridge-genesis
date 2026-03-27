@@ -226,7 +226,7 @@ const Dashboard = () => {
   return (
     <div className="flex min-h-screen bg-background">
       <div className="hidden lg:block">
-        <DashboardSidebar />
+        <DashboardSidebar hasAccess={hasAccess} />
       </div>
 
       <main id="dashboard-main" className="flex-1 min-w-0">
