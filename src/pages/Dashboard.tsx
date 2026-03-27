@@ -45,6 +45,7 @@ const Dashboard = () => {
         setHasAccess(false);
         return;
       }
+      setUserEmail(session.user?.email ?? null);
       setCheckingAccess(true);
       const { data, error } = await supabase.functions.invoke('check-subscription');
       if (!error && data?.hasAccess) {
