@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
+import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
 import BacklogTable from '@/components/BacklogTable';
 import ProgressBar from '@/components/ProgressBar';
