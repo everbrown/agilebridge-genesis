@@ -27,7 +27,7 @@ const LandingHero = () => {
         >
           <span className="inline-flex items-baseline text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
             <img src={logoA} alt="" className="inline-block h-[2em] w-auto -mr-[0.4em] translate-y-[0.2em] object-contain" />
-            <span className="relative z-10 -translate-y-[0.25em]">gileBridge</span>
+            <span className="relative z-10 -translate-y-[0.18em]">gileBridge</span>
           </span>
         </motion.div>
 
