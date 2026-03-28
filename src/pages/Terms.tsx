@@ -1,5 +1,6 @@
 import { ArrowLeft } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import BrandLogo from '@/components/BrandLogo';
 
 const EFFECTIVE_DATE = 'March 25, 2026';
 
@@ -16,6 +17,9 @@ const Terms = () => {
   return (
     <div className="min-h-screen bg-background px-4 py-16">
       <div className="max-w-2xl mx-auto">
+        <div className="flex justify-center mb-8">
+          <BrandLogo size="sm" />
+        </div>
         <button onClick={() => navigate(-1)} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft className="w-3 h-3" /> Back
         </button>

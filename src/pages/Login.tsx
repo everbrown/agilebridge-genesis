@@ -4,6 +4,7 @@ import { lovable } from '@/integrations/lovable/index';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { Checkbox } from '@/components/ui/checkbox';
+import BrandLogo from '@/components/BrandLogo';
 
 const MARKETING_OPT_IN_KEY = 'ab_marketing_opt_in';
 
@@ -62,10 +63,8 @@ const Login = () => {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-4">
       <div className="w-full max-w-sm space-y-8 text-center">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Sign in to Agile<span className="text-primary">Bridge</span>
-          </h1>
+        <div className="flex flex-col items-center">
+          <BrandLogo size="md" />
           <p className="text-sm text-muted-foreground mt-2">
             Sign in to unlock your full backlog and export features.
           </p>

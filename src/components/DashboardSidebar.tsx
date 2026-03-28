@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import BrandLogo from '@/components/BrandLogo';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', target: 'section-dashboard' },
@@ -62,9 +63,9 @@ const DashboardSidebar = ({ hasAccess = false }: DashboardSidebarProps) => {
           <ArrowLeft className="w-3 h-3" />
           Back to site
         </button>
-        <h2 className="mt-3 text-lg font-bold tracking-tighter text-foreground">
-          Agile<span className="text-primary">Bridge</span>
-        </h2>
+        <div className="mt-3">
+          <BrandLogo size="sm" linkHome={false} />
+        </div>
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
