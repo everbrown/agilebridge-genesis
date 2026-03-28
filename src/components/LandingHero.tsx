@@ -3,6 +3,7 @@ import { ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import LogoMarquee from './LogoMarquee';
 import HeroFlowAnimation from './HeroFlowAnimation';
+import logoA from '@/assets/agilebridge-logo-a.png';
 
 const transition = { type: "spring" as const, duration: 0.4, bounce: 0 };
 
@@ -18,6 +19,18 @@ const LandingHero = () => {
       }} />
 
       <div className="relative z-10 w-full max-w-4xl mx-auto px-6 sm:px-8 text-center min-w-0">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.05 }}
+          className="mb-6 flex items-center justify-center"
+        >
+          <span className="inline-flex items-baseline text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+            <img src={logoA} alt="" className="inline-block h-[1em] w-auto -mr-[0.05em] translate-y-[0.05em]" />
+            <span>gileBridge</span>
+          </span>
+        </motion.div>
+
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
