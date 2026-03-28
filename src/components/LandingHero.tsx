@@ -22,6 +22,18 @@ const LandingHero = () => {
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
+          transition={{ ...transition, delay: 0.05 }}
+          className="mb-6 flex items-center justify-center"
+        >
+          <span className="inline-flex items-baseline text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+            <img src={logoA} alt="" className="inline-block h-[1em] w-auto -mr-[0.05em] translate-y-[0.05em]" />
+            <span>gileBridge</span>
+          </span>
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
           transition={{ ...transition, delay: 0.1 }}
           className="mb-4"
         >
