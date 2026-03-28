@@ -19,7 +19,7 @@ const BrandLogo = ({ size = 'md', linkHome = true, className = '' }: BrandLogoPr
   const content = (
     <span className={`inline-flex items-baseline font-bold tracking-tight text-foreground ${sizeClasses[size]} ${className}`}>
       <img src={logoA} alt="" className="inline-block h-[2em] w-auto -mr-[0.4em] translate-y-[0.36em] object-contain" />
-      <span className="relative z-10 -translate-y-[0.25em]">gileBridge</span>
+      <span className="relative z-10 -translate-y-[0.18em]">gileBridge</span>
     </span>
   );
 
