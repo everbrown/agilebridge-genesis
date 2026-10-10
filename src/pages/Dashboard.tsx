@@ -10,7 +10,7 @@ import JiraSyncModal from '@/components/JiraSyncModal';
 import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
 import { parseDocumentWithAI, aiResponseToRawTasks } from '@/lib/parse-document-ai';
-import { exportToJSON, exportToMarkdown, copyToClipboardTable, downloadFile } from '@/lib/export-utils';
+import { exportToJSON, exportToMarkdown, exportToJiraMarkdown, exportToLinearMarkdown, copyToClipboardTable, downloadFile } from '@/lib/export-utils';
 import { toast } from '@/hooks/use-toast';
 import {
   AgileItem,
