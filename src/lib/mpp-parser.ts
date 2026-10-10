@@ -219,7 +219,7 @@ const generateAcceptanceCriteria = (title: string, type: 'Epic' | 'User Story'):
     );
   } else {
     criteria.push(
-      { given: `the ${title.toLowerCase()} task is started`, when: 'all subtasks are completed', then: 'the definition of done is met and reviewed by the team' },
+      { given: 'the requirement is approved and ready for implementation', when: 'the requested capability is delivered', then: 'it satisfies the requirement and the team verifies the result' },
       { given: 'the work is complete', when: 'a peer review is conducted', then: 'no blocking issues remain and documentation is updated' },
     );
   }
