@@ -378,7 +378,16 @@ const Dashboard = () => {
               </div>
             </div>
             {items.length > 0 && (
-              hasAccess ? (
+              <div className="flex items-center gap-2">
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-medium px-3 sm:px-4 py-2 rounded-sm text-sm transition-all hover:bg-muted active:scale-95 disabled:opacity-50"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">{sharing ? 'Creating link...' : 'Share Breakdown'}</span>
+              </button>
+              {hasAccess ? (
                 <div className="relative" ref={exportRef}>
                   <button
                     onClick={() => setExportMenuOpen(!exportMenuOpen)}
@@ -391,11 +400,25 @@ const Dashboard = () => {
                   {exportMenuOpen && (
                     <div className="absolute right-0 mt-1 w-56 bg-card border border-border rounded-sm shadow-lg z-30">
                       <button
-                        onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
+                        onClick={() => { handleCopyJiraMarkdown(); setExportMenuOpen(false); }}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left"
                       >
+                        <Clipboard className="w-4 h-4 text-muted-foreground" />
+                        Copy as Jira Markdown
+                      </button>
+                      <button
+                        onClick={() => { handleCopyLinearMarkdown(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <Clipboard className="w-4 h-4 text-muted-foreground" />
+                        Copy as Linear Markdown
+                      </button>
+                      <button
+                        onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
                         <FileDown className="w-4 h-4 text-muted-foreground" />
-                        Download CSV (Jira / Sheets)
+                        Export Jira CSV
                       </button>
                       <button
                         onClick={() => { handleExportJSON(); setExportMenuOpen(false); }}
