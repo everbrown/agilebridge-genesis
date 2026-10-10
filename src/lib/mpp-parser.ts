@@ -367,7 +367,7 @@ export const exportToJiraCSV = (items: AgileItem[]): string => {
       .map((ac, i) => `${i + 1}. Given ${ac.given}, When ${ac.when}, Then ${ac.then}`)
       .join('\n');
 
-    const description = `${item.description}\n\nAcceptance Criteria:\n${acLines}`;
+    const description = `${item.description}\n\nAcceptance Criteria:\n${acLines}\n\n— Generated with AgileBridge.ai — Convert PRDs to Epics & User Stories in seconds. https://agilebridge.ai`;
 
     return [
       escapeCSVField(item.title),
