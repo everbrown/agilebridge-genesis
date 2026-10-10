@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { RawTask } from "./mpp-parser";
+import { RawTask, isGenericHeading, parseTextContent } from "./mpp-parser";
 
 export interface ParseDocumentResponse {
   tasks?: RawTask[];
@@ -94,7 +94,7 @@ export const parseDocumentWithAI = async (file: File): Promise<ParseDocumentResp
 export const aiResponseToRawTasks = (response: ParseDocumentResponse): RawTask[] => {
   // If the API returned structured tasks directly
   if (response.tasks && Array.isArray(response.tasks)) {
-    return response.tasks.map(t => ({
+    return response.tasks.filter(t => !isGenericHeading(t.name)).map(t => ({
       ...t,
       percentComplete: t.percentComplete ?? 0,
     }));
@@ -106,33 +106,13 @@ export const aiResponseToRawTasks = (response: ParseDocumentResponse): RawTask[]
     return [];
   }
 
-  const lines = content
-    .split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 5);
-
-  const requirementLines = lines.filter(l =>
-    /^[-•*]\s/.test(l) ||
-    /^\d+[\.\)]\s/.test(l) ||
-    /^(req|requirement|task|feature|story|item|phase|milestone|epic)/i.test(l)
-  );
-
-  const sourceLines = requirementLines.length > 0 ? requirementLines : lines.slice(0, 30);
-
-  return sourceLines.map((line, idx) => {
-    const cleanLine = line.replace(/^[-•*\d.\)]+\s*/, '').trim();
-    const isTopLevel = /^(phase|epic|milestone|section|module)/i.test(cleanLine) || idx % 5 === 0;
-
-    return {
-      uid: String(idx + 1),
-      name: cleanLine,
-      outlineLevel: isTopLevel ? 1 : 2,
-      outlineNumber: isTopLevel
-        ? String(Math.floor(idx / 5) + 1)
-        : `${Math.floor(idx / 5) + 1}.${(idx % 5)}`,
-      duration: 960 + Math.floor(Math.random() * 3840),
-      priority: 400 + Math.floor(Math.random() * 500),
-      percentComplete: 0,
-    };
-  });
+  return parseTextContent(content, '').items.map(item => ({
+    uid: item.id,
+    name: item.title,
+    outlineLevel: item.type === 'Epic' ? 1 : 2,
+    outlineNumber: item.outlineNumber,
+    duration: Number.parseInt(item.estimate, 10) * 480,
+    priority: item.priority === 'High' ? 800 : item.priority === 'Medium' ? 500 : 200,
+    percentComplete: 0,
+  }));
 };
