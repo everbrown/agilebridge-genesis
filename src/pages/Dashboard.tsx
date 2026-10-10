@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown } from 'lucide-react';
+import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown, Share2 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
@@ -313,8 +313,44 @@ const Dashboard = () => {
     toast({ title: 'Copied to clipboard', description: 'Paste into Google Sheets, Notion, or any spreadsheet app.' });
   }, [items, hasAccess]);
 
+  const handleCopyJiraMarkdown = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    await navigator.clipboard.writeText(exportToJiraMarkdown(items));
+    toast({ title: 'Copied as Jira Markdown', description: 'Paste into any Jira issue description.' });
+  }, [items, hasAccess]);
+
+  const handleCopyLinearMarkdown = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    await navigator.clipboard.writeText(exportToLinearMarkdown(items));
+    toast({ title: 'Copied as Linear Markdown', description: 'Paste into any Linear issue or project.' });
+  }, [items, hasAccess]);
+
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
   const isLocked = items.length > FREE_STORY_LIMIT && !hasAccess;
+
+  const [sharing, setSharing] = useState(false);
+  const handleShare = useCallback(async () => {
+    if (visibleItems.length === 0 || sharing) return;
+    setSharing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Please sign in to share.');
+      const title = file?.name?.replace(/\.[^.]+$/, '') || visibleItems.find(i => i.type === 'Epic')?.title || 'Backlog breakdown';
+      const { data, error } = await supabase
+        .from('shared_breakdowns')
+        .insert({ title, content_json: { items: visibleItems, docType, milestones } as any, created_by: session.user.id })
+        .select('id')
+        .single();
+      if (error) throw error;
+      const url = `${window.location.origin}/share/${data.id}`;
+      try { await navigator.clipboard.writeText(url); } catch { /* clipboard blocked */ }
+      toast({ title: 'Share link copied! Anyone with the link can view.', description: url });
+    } catch (err: any) {
+      toast({ title: 'Could not create share link', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSharing(false);
+    }
+  }, [visibleItems, sharing, file, docType, milestones]);
 
   const epics = items.filter(i => i.type === 'Epic').length;
   const stories = items.filter(i => i.type === 'User Story').length;
