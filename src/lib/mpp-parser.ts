@@ -119,6 +119,14 @@ const PERSONA_MAP: Record<string, string> = {
 };
 
 const inferPersona = (title: string): string => {
+  const actor = title.match(/^(?:the\s+)?(users?|customers?|administrators?|admins?|developers?|managers?)\b/i)?.[1]?.toLowerCase();
+  if (actor) {
+    if (actor.startsWith('admin')) return 'Administrator';
+    if (actor.startsWith('developer')) return 'Developer';
+    if (actor.startsWith('manager')) return 'Manager';
+    if (actor.startsWith('customer')) return 'Customer';
+    return 'End User';
+  }
   const lower = title.toLowerCase();
   for (const [keyword, persona] of Object.entries(PERSONA_MAP)) {
     if (lower.includes(keyword)) return persona;
@@ -127,13 +135,24 @@ const inferPersona = (title: string): string => {
 };
 
 const generateUserStoryDescription = (title: string, persona: string): string => {
-  const action = title.charAt(0).toLowerCase() + title.slice(1);
+  const cleanTitle = title.trim().replace(/[.!;]+$/, '');
+  if (/^as an?\s.+,?\s+i want\b/i.test(cleanTitle)) return `${cleanTitle}.`;
+  let action = cleanTitle
+    .replace(/^(?:the\s+)?(?:users?|customers?|administrators?|admins?|developers?|managers?|system|application|platform)\s+(?:(?:must|should|shall)\s+(?:be able to\s+)?|(?:need|needs)\s+to\s+|can\s+|will\s+)/i, '')
+    .replace(/^(?:must|should|shall)\s+(?:be able to\s+)?/i, '')
+    .replace(/^to\s+/i, '')
+    .replace(/\btheir\b/gi, 'my')
+    .replace(/\bthemselves\b/gi, 'myself');
+  action = action.charAt(0).toLowerCase() + action.slice(1);
+  const isAction = /^(?:reset|log|sign|view|create|edit|delete|manage|receive|send|export|import|download|upload|search|filter|access|configure|enable|disable|track|approve|reject|update|add|remove|build|implement|define|set|audit|execute|evaluate|conduct|establish|deploy|migrate|integrate|monitor|test|validate|use|save|select|invite|assign|provide|support|allow|ensure|recover|register|change|see|review)\b/i.test(action);
   const benefit = inferBenefit(title);
-  return `As a ${persona}, I want to ${action}, so that ${benefit}.`;
+  const article = /^[aeiou]/i.test(persona) ? 'an' : 'a';
+  return `As ${article} ${persona}, I want ${isAction ? 'to ' : ''}${action}, so that ${benefit}.`;
 };
 
 const inferBenefit = (title: string): string => {
   const lower = title.toLowerCase();
+  if (lower.includes('password')) return 'I can regain secure access to my account';
   if (lower.includes('audit') || lower.includes('security')) return 'the system meets compliance and security standards';
   if (lower.includes('migration') || lower.includes('migrate')) return 'the platform runs on modern, supported infrastructure';
   if (lower.includes('pipeline') || lower.includes('ci/cd') || lower.includes('deploy')) return 'code changes can be delivered reliably and frequently';
@@ -221,10 +240,22 @@ const estimateStoryPoints = (task: RawTask): number => {
 
 // ─── Main Parsers ────────────────────────────────────────────────────
 
-export const parseMPPToAgile = (tasks: RawTask[]): AgileItem[] => {
-  const epics = tasks.filter(t => t.outlineLevel === 1);
+/** Section labels describe document organization, not deliverable work. */
+export const isGenericHeading = (value: string): boolean => {
+  const label = value.trim()
+    .replace(/^#{1,6}\s+/, '')
+    .replace(/^(?:[-•*]\s+|\d+(?:\.\d+)*[.)]?\s+)/, '')
+    .replace(/[*_]/g, '')
+    .replace(/[:.\s]+$/, '')
+    .toLowerCase();
+  return /^(?:(?:functional|non[- ]functional|business|technical|project|key)\s+)?(?:requirements?|epics?|user stories|stories|tasks?|features?|items?|scope|objectives?|overview|introduction|acceptance criteria|milestones?|deliverables?|project charter|work breakdown structure|wbs)$/.test(label);
+};
 
-  return tasks.map(task => {
+export const parseMPPToAgile = (tasks: RawTask[]): AgileItem[] => {
+  const meaningfulTasks = tasks.filter(t => t.name.trim() && !isGenericHeading(t.name));
+  const epics = meaningfulTasks.filter(t => t.outlineLevel === 1);
+
+  return meaningfulTasks.map(task => {
     const isEpic = task.outlineLevel === 1;
     const parentEpic = isEpic
       ? undefined
@@ -308,28 +339,34 @@ export const parseCSVToAgile = (csvContent: string): AgileItem[] => {
       outlineNumber: row['wbs'] || String(idx + 1),
       status: 'To Do' as const,
     };
-  });
+  }).filter(item => !isGenericHeading(item.title));
 };
 
 export const parseTextContent = (content: string, filename: string): ParseResult => {
   const documentType = classifyDocument(filename, content);
   const milestones = extractMilestones(content);
 
-  // Parse lines as requirements
-  const lines = content.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+  // Only explicit, meaningful epic/phase labels create hierarchy.
+  const lines = content.split('\n').map(l => l.trim()).filter(l => l.length > 5 && !isGenericHeading(l));
   const requirementLines = lines.filter(l =>
     /^[-•*]\s/.test(l) ||
     /^\d+[\.\)]\s/.test(l) ||
-    /^(req|requirement|task|feature|story|item)/i.test(l)
+    /^(req|requirement|task|feature|story|item|epic|phase)\b/i.test(l)
   );
 
-  const rawTasks: RawTask[] = (requirementLines.length > 0 ? requirementLines : lines.slice(0, 20)).map((line, idx) => {
-    const cleanLine = line.replace(/^[-•*\d.\)]+\s*/, '').trim();
+  let epicNumber = 0;
+  let storyNumber = 0;
+  const rawTasks: RawTask[] = (requirementLines.length > 0 ? requirementLines : lines.filter(l => !/^#|:$/.test(l)).slice(0, 20)).map((line, idx) => {
+    const stripped = line.replace(/^(?:[-•*]\s+|\d+(?:\.\d+)*[.)]?\s+)/, '').trim();
+    const isEpic = /^(?:epic|phase)\s*:\s*\S/i.test(stripped);
+    const cleanLine = stripped.replace(/^(?:epic|phase|requirement|req|task|feature|story|item)\s*(?:\d+\s*)?:\s*/i, '').replace(/[*_]/g, '').trim();
+    if (isEpic) { epicNumber++; storyNumber = 0; }
+    else { storyNumber++; }
     return {
       uid: String(idx + 1),
       name: cleanLine,
-      outlineLevel: idx % 4 === 0 ? 1 : 2,
-      outlineNumber: idx % 4 === 0 ? String(Math.floor(idx / 4) + 1) : `${Math.floor(idx / 4) + 1}.${(idx % 4)}`,
+      outlineLevel: isEpic ? 1 : 2,
+      outlineNumber: isEpic ? String(epicNumber) : epicNumber > 0 ? `${epicNumber}.${storyNumber}` : `0.${storyNumber}`,
       duration: 960 + Math.floor(Math.random() * 3840),
       priority: 400 + Math.floor(Math.random() * 500),
       percentComplete: 0,
