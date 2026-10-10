@@ -38,6 +38,30 @@ export type Database = {
         }
         Relationships: []
       }
+      shared_breakdowns: {
+        Row: {
+          content_json: Json
+          created_at: string
+          created_by: string
+          id: string
+          title: string
+        }
+        Insert: {
+          content_json: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          title?: string
+        }
+        Update: {
+          content_json?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          title?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
