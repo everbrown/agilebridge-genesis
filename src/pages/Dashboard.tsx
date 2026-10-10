@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown } from 'lucide-react';
+import { Download, Zap, FileSearch, Milestone, Lock, ChevronDown, Upload, FileJson, FileText, Clipboard, FileDown, Share2 } from 'lucide-react';
 import DashboardSidebar from '@/components/DashboardSidebar';
 import MobileSidebar from '@/components/MobileSidebar';
 import IngestZone from '@/components/IngestZone';
@@ -10,7 +10,7 @@ import JiraSyncModal from '@/components/JiraSyncModal';
 import { FREE_STORY_LIMIT } from '@/lib/stripe-tiers';
 import { supabase } from '@/integrations/supabase/client';
 import { parseDocumentWithAI, aiResponseToRawTasks } from '@/lib/parse-document-ai';
-import { exportToJSON, exportToMarkdown, copyToClipboardTable, downloadFile } from '@/lib/export-utils';
+import { exportToJSON, exportToMarkdown, exportToJiraMarkdown, exportToLinearMarkdown, copyToClipboardTable, downloadFile } from '@/lib/export-utils';
 import { toast } from '@/hooks/use-toast';
 import {
   AgileItem,
@@ -313,8 +313,44 @@ const Dashboard = () => {
     toast({ title: 'Copied to clipboard', description: 'Paste into Google Sheets, Notion, or any spreadsheet app.' });
   }, [items, hasAccess]);
 
+  const handleCopyJiraMarkdown = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    await navigator.clipboard.writeText(exportToJiraMarkdown(items));
+    toast({ title: 'Copied as Jira Markdown', description: 'Paste into any Jira issue description.' });
+  }, [items, hasAccess]);
+
+  const handleCopyLinearMarkdown = useCallback(async () => {
+    if (items.length === 0 || !hasAccess) return;
+    await navigator.clipboard.writeText(exportToLinearMarkdown(items));
+    toast({ title: 'Copied as Linear Markdown', description: 'Paste into any Linear issue or project.' });
+  }, [items, hasAccess]);
+
   const visibleItems = hasAccess ? items : items.slice(0, FREE_STORY_LIMIT);
   const isLocked = items.length > FREE_STORY_LIMIT && !hasAccess;
+
+  const [sharing, setSharing] = useState(false);
+  const handleShare = useCallback(async () => {
+    if (visibleItems.length === 0 || sharing) return;
+    setSharing(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error('Please sign in to share.');
+      const title = file?.name?.replace(/\.[^.]+$/, '') || visibleItems.find(i => i.type === 'Epic')?.title || 'Backlog breakdown';
+      const { data, error } = await supabase
+        .from('shared_breakdowns')
+        .insert({ title, content_json: { items: visibleItems, docType, milestones } as any, created_by: session.user.id })
+        .select('id')
+        .single();
+      if (error) throw error;
+      const url = `${window.location.origin}/share/${data.id}`;
+      try { await navigator.clipboard.writeText(url); } catch { /* clipboard blocked */ }
+      toast({ title: 'Share link copied! Anyone with the link can view.', description: url });
+    } catch (err: any) {
+      toast({ title: 'Could not create share link', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setSharing(false);
+    }
+  }, [visibleItems, sharing, file, docType, milestones]);
 
   const epics = items.filter(i => i.type === 'Epic').length;
   const stories = items.filter(i => i.type === 'User Story').length;
@@ -342,7 +378,16 @@ const Dashboard = () => {
               </div>
             </div>
             {items.length > 0 && (
-              hasAccess ? (
+              <div className="flex items-center gap-2">
+              <button
+                onClick={handleShare}
+                disabled={sharing}
+                className="inline-flex items-center gap-2 border border-border bg-card text-foreground font-medium px-3 sm:px-4 py-2 rounded-sm text-sm transition-all hover:bg-muted active:scale-95 disabled:opacity-50"
+              >
+                <Share2 className="w-4 h-4" />
+                <span className="hidden sm:inline">{sharing ? 'Creating link...' : 'Share Breakdown'}</span>
+              </button>
+              {hasAccess ? (
                 <div className="relative" ref={exportRef}>
                   <button
                     onClick={() => setExportMenuOpen(!exportMenuOpen)}
@@ -355,11 +400,25 @@ const Dashboard = () => {
                   {exportMenuOpen && (
                     <div className="absolute right-0 mt-1 w-56 bg-card border border-border rounded-sm shadow-lg z-30">
                       <button
-                        onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
+                        onClick={() => { handleCopyJiraMarkdown(); setExportMenuOpen(false); }}
                         className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left"
                       >
+                        <Clipboard className="w-4 h-4 text-muted-foreground" />
+                        Copy as Jira Markdown
+                      </button>
+                      <button
+                        onClick={() => { handleCopyLinearMarkdown(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
+                        <Clipboard className="w-4 h-4 text-muted-foreground" />
+                        Copy as Linear Markdown
+                      </button>
+                      <button
+                        onClick={() => { handleExportCSV(); setExportMenuOpen(false); }}
+                        className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors text-left border-t border-border"
+                      >
                         <FileDown className="w-4 h-4 text-muted-foreground" />
-                        Download CSV (Jira / Sheets)
+                        Export Jira CSV
                       </button>
                       <button
                         onClick={() => { handleExportJSON(); setExportMenuOpen(false); }}
@@ -400,7 +459,8 @@ const Dashboard = () => {
                   <Lock className="w-4 h-4" />
                   Export
                 </button>
-              )
+              )}
+              </div>
             )}
           </div>
         </header>

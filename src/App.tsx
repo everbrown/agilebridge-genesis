@@ -10,6 +10,7 @@ import Login from "./pages/Login";
 import Privacy from "./pages/Privacy";
 import Terms from "./pages/Terms";
 import NotFound from "./pages/NotFound";
+import SharedBreakdown from "./pages/SharedBreakdown";
 import AuthGuard from "./components/AuthGuard";
 import ChatWidget from "./components/ChatWidget";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/login" element={<Login />} />
             <Route path="/privacy" element={<Privacy />} />
             <Route path="/terms" element={<Terms />} />
+            <Route path="/share/:id" element={<SharedBreakdown />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <ChatWidget />

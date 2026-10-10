@@ -156,6 +156,14 @@ serve(async (req) => {
           { type: "paragraph", content: [{ type: "text", text: acText }] },
         );
       }
+      descriptionContent.push({
+        type: "paragraph",
+        content: [
+          { type: "text", text: "Generated with ", marks: [{ type: "em" }] },
+          { type: "text", text: "AgileBridge.ai", marks: [{ type: "em" }, { type: "link", attrs: { href: "https://agilebridge.ai" } }] },
+          { type: "text", text: " — Convert PRDs to Epics & User Stories in seconds.", marks: [{ type: "em" }] },
+        ],
+      });
 
       const body: any = {
         fields: {
