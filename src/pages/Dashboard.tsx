@@ -459,7 +459,8 @@ const Dashboard = () => {
                   <Lock className="w-4 h-4" />
                   Export
                 </button>
-              )
+              )}
+              </div>
             )}
           </div>
         </header>
